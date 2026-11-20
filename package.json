@@ -1,0 +1,16 @@
+{
+  "name": "work-plan",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local multi-session task tree, dependency graph, structured handoffs, and live same-folder/worktree edit protection for solo developers.",
+  "scripts": {
+    "build:ui": "node scripts/build-ui.mjs",
+    "start:sidecar": "node sidecars/work_plan/main.mjs --port 8765",
+    "test": "node --test test/*.test.mjs"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/ext-apps": "^2.0.4",
+    "esbuild": "^0.28.2"
+  }
+}

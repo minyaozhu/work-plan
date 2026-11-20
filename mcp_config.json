@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "work_plan": {
+      "command": "node",
+      "args": ["${PLUGIN_ROOT}/bin/run.mjs", "mcp/server.mjs", "--data-dir", "${PLUGIN_DATA}"]
+    }
+  }
+}

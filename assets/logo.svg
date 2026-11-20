@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" fill="none">
+  <!-- ~10% margin: artwork bounded inside x=14..114, y=14..114 -->
+  <rect x="16" y="16" width="96" height="96" rx="20" fill="#1E293B" stroke="#38BDF8" stroke-width="3"/>
+  <!-- Dependency edges (solid containment + dashed dependency) -->
+  <path d="M 42 46 L 64 46" stroke="#94A3B8" stroke-width="4" stroke-linecap="round"/>
+  <path d="M 36 52 L 36 82 L 56 82" stroke="#94A3B8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 86 46 L 94 46 L 94 82 L 84 82" stroke="#F59E0B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 5"/>
+  <!-- Root / upstream completed node (emerald) -->
+  <rect x="26" y="34" width="22" height="22" rx="6" fill="#16A34A" stroke="#DCFCE7" stroke-width="2.5"/>
+  <path d="M 32 45 L 36 49 L 43 41" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Active in-progress node (blue) -->
+  <rect x="64" y="34" width="24" height="22" rx="6" fill="#2563EB" stroke="#DBEAFE" stroke-width="2.5"/>
+  <circle cx="76" cy="45" r="4" fill="#FFFFFF"/>
+  <!-- Ready downstream node (amber) -->
+  <rect x="56" y="70" width="28" height="22" rx="6" fill="#D97706" stroke="#FEF3C7" stroke-width="2.5"/>
+  <path d="M 66 76 L 76 81 L 66 86 Z" fill="#FFFFFF"/>
+</svg>

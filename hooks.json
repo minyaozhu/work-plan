@@ -1,0 +1,62 @@
+{
+  "work-plan": {
+    "PreToolUse": [
+      {
+        "matcher": "edit_file|write_file|replace_file_content|write_to_file|multi_replace_file_content|notebook_edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ./bin/run.mjs hooks/hook.mjs pre-edit",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "edit_file|write_file|replace_file_content|write_to_file|multi_replace_file_content|notebook_edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ./bin/run.mjs hooks/hook.mjs post-edit",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "call_mcp_tool|mcp_.*work[-_]?plan.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ./bin/run.mjs hooks/hook.mjs post-mcp",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ./bin/run.mjs hooks/hook.mjs post-command",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "node ./bin/run.mjs hooks/hook.mjs pre-invocation",
+        "timeout": 10
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "node ./bin/run.mjs hooks/hook.mjs stop",
+        "timeout": 10
+      }
+    ]
+  }
+}
