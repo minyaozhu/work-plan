@@ -2,6 +2,24 @@
 
 A zero-ops, fully local **Antigravity** plugin for a single developer managing multi-day engineering projects across sequential or concurrent chats — with **no backend servers**, **no external databases**, and **no runtime dependencies**.
 
+## Screenshots
+
+### Task Tree & Inspector
+
+![Task Tree and Inspector](assets/screenshots/tasks-inspector.png)
+
+### Interactive Dependency Graph
+
+![Interactive Dependency Graph](assets/screenshots/dependency-graph.png)
+
+### Project Memory
+
+![Project Memory](assets/screenshots/project-memory.png)
+
+### Live Active-Edits Guard
+
+![Live Active-Edits Guard](assets/screenshots/active-edits.png)
+
 ## Features
 
 - **Persistent Multi-Session Task Tree & Dependency DAG**: Hierarchical tasks (up to depth 8, 500 tasks/project) with automatic parent status roll-up, cycle/paradox prevention via dual-node Kahn topological validation, and `Ready` vs. `Waiting` filtering.
