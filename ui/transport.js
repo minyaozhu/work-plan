@@ -242,12 +242,6 @@ function createSidecarTransport({ onState, onHostContext } = {}) {
   function detectSidecarTheme() {
     if (typeof document === 'undefined') return null;
     try {
-      if (typeof window !== 'undefined') {
-        const themeParam = new URLSearchParams(window.location.search).get('theme');
-        if (themeParam === 'dark' || themeParam === 'light') {
-          return themeParam;
-        }
-      }
       const hostBg = getComputedStyle(document.documentElement).getPropertyValue('--background').trim();
       if (!hostBg) {
         if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)')?.matches) {
@@ -274,12 +268,13 @@ function createSidecarTransport({ onState, onHostContext } = {}) {
   function syncSidecarTheme(notify = true) {
     const theme = detectSidecarTheme();
     if (!theme) return;
-    if (document.documentElement.dataset.theme !== theme) {
+    document.documentElement.dataset.hostTheme = theme;
+    if (!document.documentElement.dataset.themeOverride && document.documentElement.dataset.theme !== theme) {
       document.documentElement.dataset.theme = theme;
     }
     if (theme !== currentTheme) {
       currentTheme = theme;
-      if (notify) onHostContext?.({ theme });
+      if (notify) onHostContext?.({ theme, hostTheme: theme });
     }
   }
 
@@ -432,7 +427,12 @@ export function createTransport({ onState, onHostContext } = {}) {
   const applyContext = (ctx) => {
     if (!ctx) return;
     if (ctx.theme === 'dark' || ctx.theme === 'light') {
-      applyDocumentTheme(ctx.theme);
+      if (typeof document !== 'undefined') {
+        document.documentElement.dataset.hostTheme = ctx.theme;
+      }
+      if (typeof document === 'undefined' || !document.documentElement.dataset.themeOverride) {
+        applyDocumentTheme(ctx.theme);
+      }
     }
     if (ctx.styles?.variables) {
       applyHostStyleVariables(ctx.styles.variables);
@@ -440,7 +440,7 @@ export function createTransport({ onState, onHostContext } = {}) {
     if (ctx.styles?.css?.fonts) {
       applyHostFonts(ctx.styles.css.fonts);
     }
-    onHostContext?.(ctx);
+    onHostContext?.({ ...ctx, ...(ctx.theme === 'dark' || ctx.theme === 'light' ? { hostTheme: ctx.theme } : {}) });
   };
 
   app.ontoolresult = (params) => {

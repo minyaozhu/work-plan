@@ -1,6 +1,14 @@
 :root {
   color-scheme: light dark;
 
+  &:has(> head > meta[name="color-scheme"][content="dark"]) {
+    color-scheme: dark;
+  }
+
+  &:has(> head > meta[name="color-scheme"][content="light"]) {
+    color-scheme: light;
+  }
+
   --wp-bg-light: #f8fafc;
   --wp-bg-dark: #0f172a;
   --wp-surface-light: #ffffff;
@@ -166,6 +174,105 @@
   color-scheme: light;
 }
 
+/* Manual override always takes precedence over host CSS variables and OS scheme */
+:root[data-theme-override="dark"] {
+  color-scheme: dark;
+  --wp-bg: var(--wp-bg-dark);
+  --wp-surface-solid: var(--wp-surface-dark);
+  --wp-surface: var(--wp-surface-dark);
+  --wp-surface-alt: var(--wp-surface-alt-dark);
+  --wp-border: var(--wp-border-dark);
+  --wp-text: var(--wp-text-dark);
+  --wp-text-muted: var(--wp-text-muted-dark);
+  --wp-accent: var(--wp-accent-dark);
+  --wp-accent-hover: var(--wp-accent-hover-dark);
+
+  --st-todo-bg: #1e293b;
+  --st-todo-bd: #475569;
+  --st-todo-fg: #cbd5e1;
+  --st-todo-dot: #94a3b8;
+
+  --st-ready-bg: #451a03;
+  --st-ready-bd: #d97706;
+  --st-ready-fg: #fde68a;
+
+  --st-prog-bg: #172554;
+  --st-prog-bd: #3b82f6;
+  --st-prog-fg: #bfdbfe;
+  --st-prog-dot: #60a5fa;
+
+  --st-block-bg: #450a0a;
+  --st-block-bd: #ef4444;
+  --st-block-fg: #fecaca;
+  --st-block-dot: #f87171;
+
+  --st-rev-bg: #2e1065;
+  --st-rev-bd: #8b5cf6;
+  --st-rev-fg: #ddd6fe;
+  --st-rev-dot: #a78bfa;
+
+  --st-done-bg: #052e16;
+  --st-done-bd: #22c55e;
+  --st-done-fg: #bbf7d0;
+  --st-done-dot: #4ade80;
+
+  --st-cancel-bg: #1e293b;
+  --st-cancel-bd: #475569;
+  --st-cancel-fg: #94a3b8;
+  --st-cancel-dot: #64748b;
+}
+
+:root[data-theme-override="light"] {
+  color-scheme: light;
+  --wp-bg: var(--wp-bg-light);
+  --wp-surface-solid: var(--wp-surface-light);
+  --wp-surface: var(--wp-surface-light);
+  --wp-surface-alt: var(--wp-surface-alt-light);
+  --wp-border: var(--wp-border-light);
+  --wp-text: var(--wp-text-light);
+  --wp-text-muted: var(--wp-text-muted-light);
+  --wp-accent: var(--wp-accent-light);
+  --wp-accent-hover: var(--wp-accent-hover-light);
+
+  --st-todo-bg: #f1f5f9;
+  --st-todo-bd: #cbd5e1;
+  --st-todo-fg: #475569;
+  --st-todo-dot: #64748b;
+
+  --st-ready-bg: #fef3c7;
+  --st-ready-bd: #f59e0b;
+  --st-ready-fg: #92400e;
+
+  --st-prog-bg: #dbeafe;
+  --st-prog-bd: #60a5fa;
+  --st-prog-fg: #1e40af;
+  --st-prog-dot: #2563eb;
+
+  --st-block-bg: #fee2e2;
+  --st-block-bd: #f87171;
+  --st-block-fg: #991b1b;
+  --st-block-dot: #dc2626;
+
+  --st-rev-bg: #ede9fe;
+  --st-rev-bd: #a78bfa;
+  --st-rev-fg: #5b21b6;
+  --st-rev-dot: #7c3aed;
+
+  --st-done-bg: #dcfce7;
+  --st-done-bd: #4ade80;
+  --st-done-fg: #166534;
+  --st-done-dot: #16a34a;
+
+  --st-cancel-bg: #f1f5f9;
+  --st-cancel-bd: #cbd5e1;
+  --st-cancel-fg: #64748b;
+  --st-cancel-dot: #94a3b8;
+}
+
+html {
+  accent-color: var(--wp-accent);
+}
+
 *,
 *::before,
 *::after {
@@ -294,6 +401,76 @@ button {
   background: var(--st-block-bg);
   border-color: var(--st-block-bd);
   color: var(--st-block-fg);
+}
+
+.btn-theme-toggle {
+  flex-shrink: 0;
+  min-width: 74px;
+  padding: 0 10px;
+  font-weight: 600;
+  background: var(--wp-surface-alt);
+  border-color: var(--wp-border);
+}
+
+.btn-theme-toggle:hover:not(:disabled) {
+  border-color: var(--wp-accent);
+  background: var(--wp-surface);
+}
+
+.theme-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.theme-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.theme-icon--sun {
+  color: #f59e0b;
+}
+
+.theme-icon--moon {
+  color: #4f46e5;
+}
+
+.theme-opt--to-light {
+  display: none;
+}
+
+.theme-opt--to-dark {
+  display: inline-flex;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not(:has(> head > meta[name="color-scheme"][content="light"])) .theme-opt--to-light {
+    display: inline-flex;
+  }
+  :root:not([data-theme="light"]):not(:has(> head > meta[name="color-scheme"][content="light"])) .theme-opt--to-dark {
+    display: none;
+  }
+}
+
+:root[data-theme="dark"] .theme-opt--to-light,
+:root:has(> head > meta[name="color-scheme"][content="dark"]) .theme-opt--to-light {
+  display: inline-flex;
+}
+
+:root[data-theme="dark"] .theme-opt--to-dark,
+:root:has(> head > meta[name="color-scheme"][content="dark"]) .theme-opt--to-dark {
+  display: none;
+}
+
+:root[data-theme="light"] .theme-opt--to-light,
+:root:has(> head > meta[name="color-scheme"][content="light"]) .theme-opt--to-light {
+  display: none;
+}
+
+:root[data-theme="light"] .theme-opt--to-dark,
+:root:has(> head > meta[name="color-scheme"][content="light"]) .theme-opt--to-dark {
+  display: inline-flex;
 }
 
 /* Row 2: Project Summary Ribbon */

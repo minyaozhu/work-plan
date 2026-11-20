@@ -34,6 +34,11 @@ test('ui: bundled app.html is self-contained, CSP-safe, themed, and under 1 MiB'
   assert.match(html, /id="tab-active-edits-btn"/);
   assert.match(html, /id="active-edits-view"/);
   assert.equal(/id="active-strip"/.test(html), false);
+
+  // Obvious theme toggle button + override selectors
+  assert.match(html, /id="btn-theme-toggle"/);
+  assert.match(html, /data-theme-override/);
+  assert.match(html, /meta\[name="color-scheme"\]\[content="dark"\]/);
 });
 
 test('ui: formatNodeTooltip returns task title and trimmed brief', () => {

@@ -36,6 +36,81 @@ let saveTimer = null;
 let pendingSaveTaskId = null;
 let graphHandle = null;
 let toastTimer = null;
+const THEME_STORAGE_KEY = 'work-plan-theme';
+let themeOverrideMem = null;
+
+function safeStorageGet(key) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeStorageSet(key, val) {
+  try {
+    window.localStorage.setItem(key, val);
+  } catch {
+    // ignore storage errors in restricted sandboxes
+  }
+}
+
+function safeStorageRemove(key) {
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // ignore storage errors in restricted sandboxes
+  }
+}
+
+function readInitialThemeOverride() {
+  try {
+    const p = new URLSearchParams(window.location.search).get('theme');
+    if (p === 'dark' || p === 'light') return p;
+  } catch {
+    // ignore URL parse error
+  }
+  const stored = safeStorageGet(THEME_STORAGE_KEY);
+  return stored === 'dark' || stored === 'light' ? stored : null;
+}
+
+function getSystemOrHostTheme() {
+  const host = document.documentElement?.dataset?.hostTheme;
+  if (host === 'dark' || host === 'light') return host;
+  return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ? 'dark' : 'light';
+}
+
+function getEffectiveTheme() {
+  return themeOverrideMem || getSystemOrHostTheme();
+}
+
+function applyThemeState(overrideVal) {
+  themeOverrideMem = overrideVal === 'dark' || overrideVal === 'light' ? overrideVal : null;
+  const root = document.documentElement;
+  const meta = document.querySelector('meta[name="color-scheme"]');
+  if (meta) {
+    meta.content = themeOverrideMem || 'light dark';
+  }
+  if (themeOverrideMem) {
+    root.dataset.themeOverride = themeOverrideMem;
+    root.dataset.theme = themeOverrideMem;
+  } else {
+    delete root.dataset.themeOverride;
+    const host = root.dataset.hostTheme;
+    if (host === 'dark' || host === 'light') {
+      root.dataset.theme = host;
+    } else {
+      delete root.dataset.theme;
+    }
+  }
+  const effective = getEffectiveTheme();
+  const toggleBtn = document.getElementById('btn-theme-toggle');
+  if (toggleBtn) {
+    const next = effective === 'dark' ? 'light' : 'dark';
+    const modeLabel = themeOverrideMem ? 'manual' : 'auto';
+    toggleBtn.title = `Switch to ${next} theme (currently ${effective} — ${modeLabel})`;
+  }
+}
 
 function esc(val) {
   return String(val ?? '')
@@ -1909,6 +1984,36 @@ function render() {
 function wireStaticHandlers() {
   installDialogFallbacks();
 
+  themeOverrideMem = readInitialThemeOverride();
+  applyThemeState(themeOverrideMem);
+
+  document.getElementById('btn-theme-toggle')?.addEventListener('click', () => {
+    const effective = getEffectiveTheme();
+    const target = effective === 'dark' ? 'light' : 'dark';
+    const hostOrSystem = getSystemOrHostTheme();
+    if (target === hostOrSystem) {
+      safeStorageRemove(THEME_STORAGE_KEY);
+      applyThemeState(null);
+    } else {
+      safeStorageSet(THEME_STORAGE_KEY, target);
+      applyThemeState(target);
+    }
+  });
+
+  window.addEventListener('storage', (e) => {
+    if (e.key === THEME_STORAGE_KEY) {
+      const next = e.newValue === 'dark' || e.newValue === 'light' ? e.newValue : null;
+      applyThemeState(next);
+    }
+  });
+
+  const colorMedia = window.matchMedia?.('(prefers-color-scheme: dark)');
+  colorMedia?.addEventListener?.('change', () => {
+    if (!themeOverrideMem) {
+      applyThemeState(null);
+    }
+  });
+
   document.querySelectorAll('[data-close-dialog]').forEach((btn) => {
     btn.addEventListener('click', () => {
       document.getElementById(btn.dataset.closeDialog)?.close();
@@ -2231,6 +2336,9 @@ async function boot() {
     onState: (snap) => applySnapshot(snap),
     onHostContext: (ctx) => {
       appState.caps = transport.getCapabilities();
+      if ((ctx?.hostTheme || ctx?.theme) && !themeOverrideMem) {
+        applyThemeState(null);
+      }
       if (ctx?.workspaceDirs) {
         if (document.getElementById('new-project-dialog')?.open) {
           renderWorkspaceChips(document.getElementById('np-workspace-chips'), (ws) => {
@@ -2247,6 +2355,7 @@ async function boot() {
 
   try {
     const initial = await transport.connect();
+    applyThemeState(themeOverrideMem);
     appState.caps = transport.getCapabilities();
     if (initial) applySnapshot(initial);
   } catch (err) {

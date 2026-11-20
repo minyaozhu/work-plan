@@ -28,6 +28,7 @@ const html = `<!doctype html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
+  <script>(function(){try{var p=new URLSearchParams(location.search).get('theme');var t=(p==='dark'||p==='light')?p:localStorage.getItem('work-plan-theme');if(t==='dark'||t==='light'){var m=document.querySelector('meta[name="color-scheme"]');if(m)m.content=t;document.documentElement.dataset.theme=t;document.documentElement.dataset.themeOverride=t;}}catch(e){}})();</script>
   <title>Work Plan</title>
   <style>
 ${cssCode}
@@ -39,6 +40,10 @@ ${cssCode}
       <select id="project-select" class="project-select" aria-label="Select project"></select>
       <button type="button" id="btn-new-project" class="btn btn-primary">+ New Project</button>
       <input type="search" id="search-input" class="search-input" placeholder="Find by title or path..." aria-label="Filter tasks">
+      <button type="button" id="btn-theme-toggle" class="btn btn-theme-toggle" title="Switch color theme">
+        <span class="theme-opt theme-opt--to-light"><span class="theme-icon theme-icon--sun" aria-hidden="true">☀</span> Light<span class="sr-only"> theme (currently dark)</span></span>
+        <span class="theme-opt theme-opt--to-dark"><span class="theme-icon theme-icon--moon" aria-hidden="true">☾</span> Dark<span class="sr-only"> theme (currently light)</span></span>
+      </button>
       <button type="button" id="btn-settings" class="btn" popovertarget="settings-popover" aria-label="Project settings">⚙ Settings</button>
       <div id="settings-popover" popover="auto" class="popover-panel">
         <button type="button" id="menu-rename-btn" class="popover-item">Edit title / workspace</button>
