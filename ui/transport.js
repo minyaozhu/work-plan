@@ -50,6 +50,8 @@ function createStandaloneMockTransport({ onState }) {
         workspace_dir: '/Users/dev/demo-repo',
         repo_id: '/Users/dev/demo-repo/.git',
         source_ref: 'PLAN.md',
+        kp_path: 'knowledge',
+        kp_mode: 'auto',
         pinned: true,
         archived_at: null,
         stats: { total: 5, leaf_total: 4, done: 1, in_progress: 1, blocked: 1, ready: 1, percent_done: 25, active_chats: 1 },
@@ -62,6 +64,8 @@ function createStandaloneMockTransport({ onState }) {
         title: 'Work Plan Demo (Standalone Preview)',
         workspace_dir: '/Users/dev/demo-repo',
         source_ref: 'PLAN.md',
+        kp_path: 'knowledge',
+        kp_mode: 'auto',
         pinned: true,
         archived_at: null,
         stats: { total: 5, leaf_total: 4, done: 1, in_progress: 1, blocked: 1, ready: 1, percent_done: 25, active_chats: 1 },
@@ -114,6 +118,42 @@ function createStandaloneMockTransport({ onState }) {
           updated_at: new Date().toISOString(),
         },
       ],
+      knowledge_pack: {
+        configured: true,
+        enabled: true,
+        exists: true,
+        format: 'okf',
+        kp_path: 'knowledge',
+        kp_mode: 'auto',
+        resolved_path: '/Users/dev/demo-repo/knowledge',
+        repo_path: 'knowledge',
+        index_path: '/Users/dev/demo-repo/knowledge/index.md',
+        index_repo_path: 'knowledge/index.md',
+        has_index: true,
+        okf_version: '0.2',
+        title: 'Work Plan Demo Knowledge Pack',
+        description: 'Open Knowledge Format bundle for demo repo',
+        sections: ['Architecture'],
+        concepts: [
+          {
+            id: 'schema-tables',
+            rel_path: 'architecture/schema-tables.md',
+            repo_path: 'knowledge/architecture/schema-tables.md',
+            abs_path: '/Users/dev/demo-repo/knowledge/architecture/schema-tables.md',
+            type: 'architecture',
+            category: 'architecture',
+            title: 'SQLite WAL Schema',
+            description: '7-table local SQLite WAL schema with zero runtime deps.',
+            resource: 'sqlite://work_plan.db',
+            tags: ['sqlite', 'wal'],
+            file_paths: ['core/db.mjs'],
+            inject_mode: 'always',
+            confidence: 'confirmed',
+            section: 'Architecture',
+            body_preview: '7-table local SQLite WAL schema with zero runtime deps.',
+          },
+        ],
+      },
     },
   };
 
@@ -195,6 +235,29 @@ function createStandaloneMockTransport({ onState }) {
         sampleState.state.memories = (sampleState.state.memories || []).filter(
           (m) => m.memory_id !== params.memory_id
         );
+      }
+      if (tool === 'ui_update_project') {
+        if (params.title !== undefined) {
+          sampleState.state.project.title = params.title;
+          sampleState.projects[0].title = params.title;
+        }
+        if (params.kp_path !== undefined) {
+          sampleState.state.project.kp_path = params.kp_path;
+          sampleState.projects[0].kp_path = params.kp_path;
+          sampleState.state.knowledge_pack.kp_path = params.kp_path;
+          sampleState.state.knowledge_pack.configured = Boolean(params.kp_path);
+          sampleState.state.knowledge_pack.exists = Boolean(params.kp_path);
+          sampleState.state.knowledge_pack.format =
+            params.kp_mode === 'markdown' || /\.md$/i.test(params.kp_path) && !/index\.md$/i.test(params.kp_path)
+              ? 'markdown'
+              : 'okf';
+        }
+        if (params.kp_mode !== undefined) {
+          sampleState.state.project.kp_mode = params.kp_mode;
+          sampleState.projects[0].kp_mode = params.kp_mode;
+          sampleState.state.knowledge_pack.kp_mode = params.kp_mode;
+          sampleState.state.knowledge_pack.enabled = params.kp_mode !== 'disabled';
+        }
       }
       return sampleState;
     },

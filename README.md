@@ -12,9 +12,13 @@ A zero-ops, fully local **Antigravity** plugin for a single developer managing m
 
 ![Interactive Dependency Graph](assets/screenshots/dependency-graph.png)
 
-### Project Memory
+### Knowledge & Memory — Memory
 
-![Project Memory](assets/screenshots/project-memory.png)
+![Knowledge and Memory — Memory View](assets/screenshots/project-memory.png)
+
+### Knowledge & Memory — Knowledge Pack (OKF & Single Markdown)
+
+![Knowledge and Memory — Knowledge Pack](assets/screenshots/knowledge-pack.png)
 
 ### Live Active-Edits Guard
 
@@ -26,8 +30,18 @@ A zero-ops, fully local **Antigravity** plugin for a single developer managing m
 - **Structured Task-to-Task Handoffs**: Record concise `handoff_notes` when completing a task; downstream chats receive them automatically via `task_start` and SHA-deduped `PreInvocation` turn briefs.
 - **Automatic Live-Edit Guard**: Zero-ceremony `PreToolUse` + `PostToolUse` + `Stop` lifecycle hooks prevent silent same-folder overwrites (`force_ask`) across parallel Antigravity chats and warn on shared lockfiles/schemas across Git worktrees (`ask`), clearing locks the instant a turn finishes.
 - **Project-Scoped Working Notes**: Store `decision`, `gotcha`, `spec`, and `note` entries alongside the project; pin critical invariants (`pinned: true`) into turn briefs.
-- **Project Memory (`Project Memory` tab + automatic `[WORK PLAN]` injection)**: Durable, categorized cross-session knowledge (`architecture`, `convention`, `command`, `constraint`, `pitfall`, `context`, `fact`) with idempotent `key` upserts, `always` / file-matched `on_demand` / `disabled` injection modes, confidence tracking (`confirmed`, `inferred`, `stale`), one-click Markdown export, and agent repo scanning.
-- **Interactive Dual-Mode Aux Pane UI (`sidecars/work_plan/` + `ui://work-plan/app.html`)**: Ships both an **Antigravity Sidecar Aux Pane** (`sidecars/work_plan/sidecar.json` → `SIDECAR_UI_ENTRYPOINT_AUX_PANE`) for zero-flag out-of-the-box side pane support and a single-file **SEP-1865 MCP App** (`ui://work-plan/app.html`) sharing the same local SQLite WAL store. Features a responsive master-detail Task Tree + Inspector, interactive left-to-right SVG Dependency Graph, Notes manager, Project Memory tab, Active Edits tab, and one-click **Run in New Chat** / **Run Next Ready**.
+- **Knowledge & Memory (`Knowledge & Memory` tab: Memory + Knowledge Pack)**: Combines durable, categorized cross-session **Memory** cards with a **Knowledge Pack (KP)** setting supporting both **OKF (Open Knowledge Format)** bundles (`index.md` + frontmatter concept files) and **single Markdown files** (`.md`), with automatic `[WORK PLAN]` turn-brief injection and 1-click import/export.
+- **Interactive Dual-Mode Aux Pane UI (`sidecars/work_plan/` + `ui://work-plan/app.html`)**: Ships both an **Antigravity Sidecar Aux Pane** (`sidecars/work_plan/sidecar.json` → `SIDECAR_UI_ENTRYPOINT_AUX_PANE`) for zero-flag out-of-the-box side pane support and a single-file **SEP-1865 MCP App** (`ui://work-plan/app.html`) sharing the same local SQLite WAL store. Features a responsive master-detail Task Tree + Inspector, interactive left-to-right SVG Dependency Graph with hover tooltips, Notes manager, Knowledge & Memory tab, Active Edits tab, built-in **Light / Dark theme toggle**, and one-click **Run in New Chat** / **Run Next Ready**.
+
+## Knowledge & Memory
+
+The **Knowledge & Memory** tab includes a **`Memory` | `Knowledge Pack`** sub-switch and a persistent Knowledge Pack status bar:
+
+- **Memory**: Store durable, categorized project knowledge (`architecture`, `convention`, `command`, `constraint`, `pitfall`, `context`, `fact`) with idempotent `key` upserts, `always` / file-matched `on_demand` / `disabled` injection modes, confidence tracking (`confirmed`, `inferred`, `stale`), 1-click Markdown export, and agent repo scanning.
+- **Knowledge Pack (KP)**: Link a portable, git-native knowledge source on disk via **Browse Folder…** or **Browse .md…**:
+  - **OKF (Open Knowledge Format) Bundle**: Point to an OKF directory or its root `index.md` (with `okf_version` frontmatter and Markdown links to concept `.md` files carrying YAML frontmatter `type`, `title`, `description`, `resource`, `tags`, `files`).
+  - **Single Markdown File**: Point to any standalone `.md` file (e.g., `KNOWLEDGE.md`, `AGENTS.md`, `ARCHITECTURE.md`) to parse its headings and sections.
+  - **Auto-Injection & 1-Click Sync**: Active KPs automatically inject progressive-disclosure summaries (prioritizing concepts/sections matching the bound task's files) into `[WORK PLAN]` turn briefs. Use **⬇ Import KP to Memory** (or per-card **+ To Memory**) to pull items into Memory, or **⬆ Export Memory as OKF** / **⬆ Export Memory as .md** to write your Memory cards out to disk as a standards-compliant OKF v0.2 bundle (`index.md`, `<category>/<slug>.md`, `log.md`) or a single Markdown file.
 
 ## Installation (Antigravity)
 

@@ -9,6 +9,7 @@ import {
   listProjectActiveEdits,
   recordCommittedEdit,
 } from '../core/edit_guard.mjs';
+import { selectKnowledgePackForBrief } from '../core/knowledge_pack.mjs';
 import { selectMemoriesForBrief } from '../core/memory.mjs';
 import { listNotes } from '../core/notes.mjs';
 import {
@@ -348,6 +349,15 @@ function handlePreInvocation(db, dataDir, payload) {
     lines.push('Project memory:');
     for (const m of memBrief.items) {
       lines.push(`- [${m.category}] ${m.title}: ${m.snippet}`);
+    }
+  }
+
+  const kpBrief = selectKnowledgePackForBrief(state.project, {
+    taskFiles: state.focus_task?.files || [],
+  });
+  if (kpBrief.active && kpBrief.lines.length > 0) {
+    for (const l of kpBrief.lines) {
+      lines.push(l);
     }
   }
 

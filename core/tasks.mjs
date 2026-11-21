@@ -9,6 +9,7 @@ import {
   WorkPlanError,
 } from './db.mjs';
 import { listProjectActiveEdits } from './edit_guard.mjs';
+import { inspectKnowledgePack, normalizeKpMode } from './knowledge_pack.mjs';
 import { listMemories } from './memory.mjs';
 import { listNotes } from './notes.mjs';
 import { resolveGitInfo, seedProjectSource, slugify } from './sources.mjs';
@@ -417,6 +418,8 @@ function formatProjectSummary(db, row) {
     workspace_dir: row.workspace_dir,
     repo_id: row.repo_id,
     source_ref: row.source_ref,
+    kp_path: row.kp_path || '',
+    kp_mode: row.kp_mode || 'auto',
     pinned: Boolean(row.pinned),
     archived_at: row.archived_at || null,
     created_at: row.created_at,
@@ -443,8 +446,13 @@ export function listProjects(db, { includeArchived = false } = {}) {
   return rows.map((r) => formatProjectSummary(db, r));
 }
 
-export function createProject(db, { title = '', workspace_dir = '', source_ref = '', seed = true } = {}) {
+export function createProject(
+  db,
+  { title = '', workspace_dir = '', source_ref = '', kp_path = '', kp_mode = 'auto', seed = true } = {}
+) {
   const seeded = seedProjectSource({ title, workspace_dir, source_ref, seed });
+  const cleanKpPath = String(kp_path || '').trim();
+  const cleanKpMode = normalizeKpMode(kp_mode, 'auto');
   const baseSlug = slugify(seeded.title, 'project');
   const stamp = formatProjectIdTimestamp();
 
@@ -459,9 +467,19 @@ export function createProject(db, { title = '', workspace_dir = '', source_ref =
     const now = nowIso();
     db.prepare(
       `INSERT INTO Projects (
-         project_id, title, workspace_dir, repo_id, source_ref, pinned, archived_at, created_at, updated_at
-       ) VALUES (?, ?, ?, ?, ?, 0, NULL, ?, ?)`
-    ).run(projectId, seeded.title, seeded.workspace_dir, seeded.repo_id, seeded.source_ref, now, now);
+         project_id, title, workspace_dir, repo_id, source_ref, kp_path, kp_mode, pinned, archived_at, created_at, updated_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL, ?, ?)`
+    ).run(
+      projectId,
+      seeded.title,
+      seeded.workspace_dir,
+      seeded.repo_id,
+      seeded.source_ref,
+      cleanKpPath,
+      cleanKpMode,
+      now,
+      now
+    );
 
     if (seeded.tasks.length > 0) {
       planTasks(db, projectId, { tasks: seeded.tasks });
@@ -479,7 +497,11 @@ export function createProject(db, { title = '', workspace_dir = '', source_ref =
   });
 }
 
-export function updateProject(db, projectId, { title, pinned, workspace_dir, source_ref } = {}) {
+export function updateProject(
+  db,
+  projectId,
+  { title, pinned, workspace_dir, source_ref, kp_path, kp_mode } = {}
+) {
   return withTransaction(db, () => {
     const existing = db.prepare('SELECT * FROM Projects WHERE project_id = ?').get(projectId);
     if (!existing) {
@@ -498,13 +520,26 @@ export function updateProject(db, projectId, { title, pinned, workspace_dir, sou
       nextRepoId = nextWorkspace ? resolveGitInfo(nextWorkspace).repoId : '';
     }
     const nextSourceRef = source_ref !== undefined ? String(source_ref).trim() : existing.source_ref;
+    const nextKpPath = kp_path !== undefined ? String(kp_path).trim() : existing.kp_path || '';
+    const nextKpMode =
+      kp_mode !== undefined ? normalizeKpMode(kp_mode, 'auto') : existing.kp_mode || 'auto';
     const now = nowIso();
 
     db.prepare(
       `UPDATE Projects
-       SET title = ?, workspace_dir = ?, repo_id = ?, source_ref = ?, pinned = ?, updated_at = ?
+       SET title = ?, workspace_dir = ?, repo_id = ?, source_ref = ?, kp_path = ?, kp_mode = ?, pinned = ?, updated_at = ?
        WHERE project_id = ?`
-    ).run(nextTitle, nextWorkspace, nextRepoId, nextSourceRef, nextPinned, now, projectId);
+    ).run(
+      nextTitle,
+      nextWorkspace,
+      nextRepoId,
+      nextSourceRef,
+      nextKpPath,
+      nextKpMode,
+      nextPinned,
+      now,
+      projectId
+    );
 
     return formatProjectSummary(db, db.prepare('SELECT * FROM Projects WHERE project_id = ?').get(projectId));
   });
@@ -1309,6 +1344,7 @@ export function getProjectState(
   const project = formatProjectSummary(db, projectRow);
   const notes = include_notes ? listNotes(db, projectId, { task_id }) : [];
   const memories = include_memories ? listMemories(db, projectId) : [];
+  const knowledgePack = include_memories ? inspectKnowledgePack(project) : null;
 
   let focusTask = null;
   let upstreamHandoffs = [];
@@ -1331,6 +1367,7 @@ export function getProjectState(
     bindings,
     notes,
     memories,
+    knowledge_pack: knowledgePack,
     ...(focusTask ? { focus_task: focusTask, upstream_handoffs: upstreamHandoffs } : {}),
   };
 }

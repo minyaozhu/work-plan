@@ -3,6 +3,11 @@ import path from 'node:path';
 import { getMeta, openDb, resolveDataDir, setMeta, WorkPlanError } from '../core/db.mjs';
 import { clearSpecificEdit } from '../core/edit_guard.mjs';
 import {
+  exportMemoriesToKnowledgePack,
+  importKnowledgePackToMemories,
+  KP_MODES,
+} from '../core/knowledge_pack.mjs';
+import {
   deleteMemory,
   listMemories,
   MEMORY_CATEGORIES,
@@ -174,9 +179,25 @@ function summarizeProjectText(state) {
   }
   const activeMemories = memories.filter((m) => m.inject_mode === 'always' && m.confidence !== 'stale');
   if (activeMemories.length > 0) {
-    lines.push('', '## Project Memory');
+    lines.push('', '## Knowledge (Memory)');
     for (const m of activeMemories.slice(0, 5)) {
       lines.push(`- [${m.category}] **${m.title}**: ${m.content.slice(0, 160)}`);
+    }
+  }
+  const kp = state.knowledge_pack;
+  if (kp?.configured && kp?.enabled && kp?.exists) {
+    if (kp.format === 'okf') {
+      lines.push(
+        '',
+        `## Knowledge Pack (OKF v${kp.okf_version})`,
+        `- Path: \`${kp.index_repo_path || kp.repo_path || kp.kp_path}\` — **${kp.title}** (${kp.concepts.length} concept${kp.concepts.length === 1 ? '' : 's'})`
+      );
+    } else {
+      lines.push(
+        '',
+        '## Knowledge Pack (Markdown)',
+        `- Path: \`${kp.repo_path || kp.kp_path}\` — **${kp.title}** (${kp.sections.length} section${kp.sections.length === 1 ? '' : 's'})`
+      );
     }
   }
   return lines.join('\n');
@@ -234,6 +255,8 @@ function getToolDefinitions() {
           title: { type: 'string', description: 'Project title (optional if seeded from Markdown, folder, or GitHub URL).' },
           workspace_dir: { type: 'string', description: 'Local workspace directory path.' },
           source_ref: { type: 'string', description: 'Optional path to PLAN.md/SPEC.md, local folder, or GitHub issue URL.' },
+          kp_path: { type: 'string', description: 'Optional path to Knowledge Pack (OKF bundle directory/index.md or single Markdown file).' },
+          kp_mode: { type: 'string', enum: KP_MODES, description: 'Knowledge Pack mode (auto, okf, markdown, disabled).' },
           seed: { type: 'boolean', description: 'Whether to auto-seed tasks from source_ref (default true).' },
         },
       },
@@ -482,7 +505,7 @@ function getToolDefinitions() {
     },
     {
       name: 'ui_update_project',
-      description: 'App-only: rename, pin, or update project workspace/source.',
+      description: 'App-only: rename, pin, update project workspace/source, or configure/sync Knowledge Pack (KP).',
       inputSchema: {
         type: 'object',
         required: ['project_id'],
@@ -492,6 +515,11 @@ function getToolDefinitions() {
           pinned: { type: 'boolean' },
           workspace_dir: { type: 'string' },
           source_ref: { type: 'string' },
+          kp_path: { type: 'string' },
+          kp_mode: { type: 'string', enum: KP_MODES },
+          kp_action: { type: 'string', enum: ['import', 'export_okf', 'export_markdown'] },
+          kp_item_id: { type: 'string' },
+          kp_export_path: { type: 'string' },
         },
       },
       _meta: APP_ONLY_META,
@@ -729,6 +757,8 @@ export function handleToolCall(db, pluginRoot, name, rawArgs) {
         title: args.title || '',
         workspace_dir: args.workspace_dir || '',
         source_ref: args.source_ref || '',
+        kp_path: args.kp_path || '',
+        kp_mode: args.kp_mode || 'auto',
         seed: args.seed !== false,
       });
       const text = `Created project **${res.project.title}** (\`${res.project.project_id}\`) with ${res.seeded_count} seeded task(s).${res.warning ? `\nNote: ${res.warning}` : ''}`;
@@ -943,11 +973,29 @@ export function handleToolCall(db, pluginRoot, name, rawArgs) {
     }
 
     case 'ui_update_project': {
-      updateProject(db, args.project_id, args);
+      let proj = updateProject(db, args.project_id, args);
+      let kpResult = null;
+      if (args.kp_action === 'import') {
+        kpResult = importKnowledgePackToMemories(db, proj, {
+          item_id: args.kp_item_id || null,
+        });
+      } else if (args.kp_action === 'export_okf' || args.kp_action === 'export_markdown') {
+        const format = args.kp_action === 'export_markdown' ? 'markdown' : 'okf';
+        kpResult = exportMemoriesToKnowledgePack(db, proj, {
+          format,
+          target_path: args.kp_export_path || proj.kp_path || '',
+        });
+        if (!proj.kp_path && kpResult.repo_path) {
+          proj = updateProject(db, args.project_id, {
+            kp_path: kpResult.repo_path,
+            kp_mode: 'auto',
+          });
+        }
+      }
       const snap = buildUiSnapshot(db, args.project_id, true);
       return {
         content: [{ type: 'text', text: `Updated project ${args.project_id}.` }],
-        structuredContent: enforceSizeBudget(snap),
+        structuredContent: enforceSizeBudget(kpResult ? { ...snap, kp_result: kpResult } : snap),
       };
     }
 

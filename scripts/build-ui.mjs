@@ -57,7 +57,7 @@ ${cssCode}
     <nav id="tabbar" class="tabbar" hidden aria-label="Project sections">
       <button type="button" id="tab-tasks-btn" class="tab-btn active">Tasks<span id="tab-tasks-count" class="tab-count">0</span></button>
       <button type="button" id="tab-notes-btn" class="tab-btn">Notes<span id="tab-notes-count" class="tab-count">0</span></button>
-      <button type="button" id="tab-memory-btn" class="tab-btn">Project Memory<span id="tab-memory-count" class="tab-count">0</span></button>
+      <button type="button" id="tab-memory-btn" class="tab-btn">Knowledge &amp; Memory<span id="tab-memory-count" class="tab-count">0</span></button>
       <button type="button" id="tab-active-edits-btn" class="tab-btn">Active Edits<span id="tab-active-edits-count" class="tab-count">0</span></button>
     </nav>
 

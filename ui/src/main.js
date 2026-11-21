@@ -26,6 +26,9 @@ const appState = {
   memorySearch: '',
   editingMemoryId: null,
   showMemoryForm: false,
+  knowledgeSubTab: 'memory', // 'memory' | 'kp'
+  kpTypeFilter: 'all',
+  kpSearch: '',
   activeEditsFilter: 'all', // 'all' | 'overlaps'
   editExpanded: true,
   caps: { canStartChat: false, canOpenFile: false, displayMode: 'inline' },
@@ -149,7 +152,8 @@ function isUserTyping() {
     return (
       active.id !== 'search-input' &&
       active.id !== 'note-search' &&
-      active.id !== 'memory-search'
+      active.id !== 'memory-search' &&
+      active.id !== 'kp-search'
     );
   }
   return false;
@@ -1175,26 +1179,477 @@ function renderNotesTab(state) {
 function renderMemoryTab(state) {
   const view = document.getElementById('memory-view');
   if (!state) {
-    view.innerHTML = `<div class="empty-state"><p>Select or create a project to manage Project Memory.</p></div>`;
+    view.innerHTML = `<div class="empty-state"><p>Select or create a project to manage Knowledge (Knowledge Pack & Memory).</p></div>`;
     return;
   }
 
-  const { project, memories = [] } = state;
+  const { project, memories = [], knowledge_pack: kp = null } = state;
   const alwaysCount = memories.filter((m) => m.inject_mode === 'always' && m.confidence !== 'stale').length;
   const onDemandCount = memories.filter((m) => m.inject_mode === 'on_demand' && m.confidence !== 'stale').length;
   const reviewCount = memories.filter((m) => m.confidence === 'inferred' || m.confidence === 'stale').length;
 
-  const q = appState.memorySearch.trim().toLowerCase();
-  const filtered = memories.filter((m) => {
-    if (appState.memoryCategoryFilter !== 'all' && m.category !== appState.memoryCategoryFilter) return false;
-    if (appState.memoryInjectFilter !== 'all' && m.inject_mode !== appState.memoryInjectFilter) return false;
-    if (appState.memoryConfidenceFilter !== 'all' && m.confidence !== appState.memoryConfidenceFilter) return false;
-    if (q) {
-      const hay = `${m.title} ${m.content} ${m.key || ''} ${(m.tags || []).join(' ')} ${(m.file_paths || []).join(' ')}`.toLowerCase();
-      if (!hay.includes(q)) return false;
-    }
-    return true;
-  });
+  const kpItemCount = kp?.exists
+    ? kp.format === 'okf'
+      ? (kp.concepts || []).length
+      : (kp.sections || []).length
+    : 0;
+  const kpBadgeLabel = kp?.configured
+    ? kp.exists
+      ? kp.format === 'okf'
+        ? `OKF · ${kpItemCount}`
+        : `MD · ${kpItemCount}`
+      : 'missing'
+    : 'none';
+
+  const kpOpenPath = kp?.exists
+    ? kp.format === 'okf' && kp.has_index
+      ? kp.index_path || kp.index_repo_path
+      : kp.resolved_path || kp.repo_path
+    : '';
+  const kpDisplayPath =
+    kp?.format === 'okf' && kp?.has_index
+      ? kp.index_repo_path || kp.kp_path
+      : kp?.repo_path || kp?.kp_path || project.kp_path || '';
+
+  let kpStatusHtml = '';
+  if (kp?.configured) {
+    const statusPill = !kp.enabled
+      ? `<span class="pill">⏸ KP Disabled</span>`
+      : !kp.exists
+        ? `<span class="pill pill-ready">⚠ KP path not found</span>`
+        : kp.format === 'okf'
+          ? `<span class="pill pill-prog">📦 OKF v${esc(kp.okf_version || '0.2')} · ${kpItemCount} concept${kpItemCount === 1 ? '' : 's'}</span>`
+          : `<span class="pill pill-rev">📄 Markdown KP · ${kpItemCount} section${kpItemCount === 1 ? '' : 's'}</span>`;
+
+    const pathChip =
+      kp.exists && kpOpenPath
+        ? `<button type="button" class="chip-link" id="btn-open-kp-status-file" title="Open Knowledge Pack">${esc(kpDisplayPath)}</button>`
+        : `<code class="pill pill-mono">${esc(kpDisplayPath)}</code>`;
+
+    kpStatusHtml = `<div class="kp-status-strip">
+      ${statusPill}
+      ${pathChip}
+      ${
+        appState.knowledgeSubTab === 'memory'
+          ? `<button type="button" class="btn btn-sm" id="btn-jump-kp-settings">⚙ KP Settings</button>`
+          : ''
+      }
+    </div>`;
+  } else {
+    kpStatusHtml = `<div class="kp-status-strip">
+      <span class="pill">No Knowledge Pack linked</span>
+      ${
+        appState.knowledgeSubTab === 'memory'
+          ? `<button type="button" class="btn btn-sm" id="btn-jump-kp-settings">+ Set Knowledge Pack</button>`
+          : ''
+      }
+    </div>`;
+  }
+
+  const topbarHtml = `<div class="knowledge-topbar">
+    <div class="knowledge-subswitch" role="tablist" aria-label="Knowledge views">
+      <button type="button" id="btn-ksub-memory" role="tab" aria-selected="${appState.knowledgeSubTab === 'memory'}" class="knowledge-subbtn${appState.knowledgeSubTab === 'memory' ? ' active' : ''}">
+        Memory <span class="tab-count">${memories.length}</span>
+      </button>
+      <button type="button" id="btn-ksub-kp" role="tab" aria-selected="${appState.knowledgeSubTab === 'kp'}" class="knowledge-subbtn${appState.knowledgeSubTab === 'kp' ? ' active' : ''}">
+        Knowledge Pack <span class="tab-count">${esc(kpBadgeLabel)}</span>
+      </button>
+    </div>
+    ${kpStatusHtml}
+  </div>`;
+
+  const wireSubSwitchAndStatus = () => {
+    document.getElementById('btn-ksub-memory')?.addEventListener('click', () => {
+      appState.knowledgeSubTab = 'memory';
+      render();
+    });
+    document.getElementById('btn-ksub-kp')?.addEventListener('click', () => {
+      appState.knowledgeSubTab = 'kp';
+      render();
+    });
+    document.getElementById('btn-jump-kp-settings')?.addEventListener('click', () => {
+      appState.knowledgeSubTab = 'kp';
+      render();
+    });
+    document.getElementById('btn-open-kp-status-file')?.addEventListener('click', async () => {
+      if (!kpOpenPath) return;
+      const abs = resolveAbsFile(project.workspace_dir, kpOpenPath);
+      const res = await transport.openFile(abs);
+      if (res?.fallback === 'copy') await copyToClipboard(abs, `Copied path: ${abs}`);
+    });
+  };
+
+  if (appState.knowledgeSubTab === 'kp') {
+    const currentMode = project.kp_mode || 'auto';
+    const currentPath = project.kp_path || '';
+    const concepts = kp?.concepts || [];
+    const sections = kp?.sections || [];
+    const conceptTypes = ['all', ...new Set(concepts.map((c) => c.type).filter(Boolean))];
+
+    view.innerHTML = `<div class="memory-view">
+      ${topbarHtml}
+
+      <form id="kp-settings-form" class="kp-settings-card">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+          <div>
+            <h2 style="margin:0;font-size:13.5px;font-weight:700;">Knowledge Pack (KP) Setting</h2>
+            <p class="muted" style="margin:3px 0 0;font-size:12px;">
+              Support an <strong>OKF (Open Knowledge Format)</strong> directory / <code>index.md</code> bundle or a <strong>single Markdown file</strong> (<code>.md</code>). Active KPs auto-inject into <code>[WORK PLAN]</code> turn briefs.
+            </p>
+          </div>
+        </div>
+
+        <div class="kp-settings-grid">
+          <select id="kp-mode-select" class="field-select" style="flex:1 1 210px;max-width:270px;" aria-label="Knowledge Pack format">
+            <option value="auto"${currentMode === 'auto' ? ' selected' : ''}>Auto-detect (OKF or Single .md)</option>
+            <option value="okf"${currentMode === 'okf' ? ' selected' : ''}>OKF Bundle (folder or index.md)</option>
+            <option value="markdown"${currentMode === 'markdown' ? ' selected' : ''}>Single Markdown File (.md)</option>
+            <option value="disabled"${currentMode === 'disabled' ? ' selected' : ''}>Disabled (mute brief injection)</option>
+          </select>
+          <div class="input-with-btn" style="flex:2 1 280px;">
+            <input id="kp-path-input" class="field-input mono" placeholder="knowledge/ (OKF folder), knowledge/index.md, or KNOWLEDGE.md" value="${esc(currentPath)}" aria-label="Knowledge Pack path">
+            <button type="button" id="btn-browse-kp-dir" class="btn btn-sm" title="Browse for an OKF bundle folder">Browse Folder…</button>
+            <button type="button" id="btn-browse-kp-file" class="btn btn-sm" title="Browse for an index.md or single Markdown file">Browse .md…</button>
+          </div>
+        </div>
+
+        <div class="action-row" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <div class="action-row" style="flex-wrap:wrap;">
+            <button type="button" id="btn-kp-import" class="btn btn-sm"${!kp?.exists ? ' disabled' : ''} title="Import OKF concepts or Markdown sections into Memory cards">⬇ Import KP to Memory</button>
+            <button type="button" id="btn-kp-export-okf" class="btn btn-sm" title="Export active Memory cards to an OKF v0.2 bundle on disk">⬆ Export Memory as OKF</button>
+            <button type="button" id="btn-kp-export-md" class="btn btn-sm" title="Export active Memory cards to a single Markdown file on disk">⬆ Export Memory as .md</button>
+          </div>
+          <div class="action-row">
+            ${currentPath ? `<button type="button" id="btn-kp-clear" class="btn btn-sm">Unlink</button>` : ''}
+            <button type="submit" id="btn-kp-save" class="btn btn-primary btn-sm">Save KP Setting</button>
+          </div>
+        </div>
+      </form>
+
+      ${
+        kp?.configured && kp?.exists && kp.format === 'okf'
+          ? `<div class="memory-banner">
+               <div class="memory-banner-stats">
+                 <span class="pill pill-prog">📦 OKF v${esc(kp.okf_version || '0.2')}</span>
+                 <strong>${esc(kp.title)}</strong>
+                 ${kp.description ? `<span class="muted">— ${esc(kp.description)}</span>` : ''}
+                 <span class="pill">${concepts.length} concept${concepts.length === 1 ? '' : 's'}</span>
+                 <span class="pill">${kp.has_index ? 'index.md ✓' : 'directory scan'}</span>
+               </div>
+               <div class="action-row">
+                 ${
+                   kpOpenPath
+                     ? `<button type="button" class="btn btn-sm" id="btn-open-kp-root">Open ${kp.has_index ? 'index.md' : 'Folder'}</button>`
+                     : ''
+                 }
+               </div>
+             </div>
+             <div class="memory-toolbar">
+               <div class="action-row">
+                 ${conceptTypes
+                   .map(
+                     (t) =>
+                       `<button type="button" class="btn btn-sm${appState.kpTypeFilter === t ? ' btn-primary' : ''}" data-kp-type="${esc(t)}">${t === 'all' ? 'All types' : esc(t)}</button>`
+                   )
+                   .join('')}
+               </div>
+               <input id="kp-search" class="search-input" style="max-width:220px;height:28px;" placeholder="Filter OKF concepts..." value="${esc(appState.kpSearch)}">
+             </div>`
+          : kp?.configured && kp?.exists && kp.format === 'markdown'
+            ? `<div class="memory-banner">
+                 <div class="memory-banner-stats">
+                   <span class="pill pill-rev">📄 Single Markdown KP</span>
+                   <strong>${esc(kp.title)}</strong>
+                   ${kp.description ? `<span class="muted">— ${esc(kp.description)}</span>` : ''}
+                   <span class="pill">${sections.length} section${sections.length === 1 ? '' : 's'}</span>
+                 </div>
+                 <div class="action-row">
+                   ${kpOpenPath ? `<button type="button" class="btn btn-sm" id="btn-open-kp-root">Open Markdown File</button>` : ''}
+                 </div>
+               </div>
+               <div class="memory-toolbar">
+                 <input id="kp-search" class="search-input" style="max-width:240px;height:28px;" placeholder="Filter Markdown sections..." value="${esc(appState.kpSearch)}">
+               </div>`
+            : ''
+      }
+
+      <div id="kp-list-host"></div>
+    </div>`;
+
+    wireSubSwitchAndStatus();
+
+    const saveKpConfig = async (nextPath, nextMode, extra = {}) => {
+      const res = await runTool('ui_update_project', {
+        project_id: project.project_id,
+        kp_path: nextPath,
+        kp_mode: nextMode,
+        ...extra,
+      });
+      return res;
+    };
+
+    const renderKpList = () => {
+      const host = document.getElementById('kp-list-host');
+      if (!host) return;
+
+      if (!kp?.configured) {
+        host.innerHTML = `<div class="empty-state">
+          <p>No Knowledge Pack configured yet. Link an existing <strong>OKF bundle</strong> (directory with <code>index.md</code> + concept <code>.md</code> files) or a <strong>single Markdown file</strong> (e.g. <code>KNOWLEDGE.md</code>), or bootstrap one directly from your project's Memory cards:</p>
+          <div class="action-row">
+            <button type="button" id="btn-empty-init-okf" class="btn btn-primary btn-sm">📦 Bootstrap OKF Bundle (knowledge/)</button>
+            <button type="button" id="btn-empty-init-md" class="btn btn-sm">📄 Bootstrap Single Markdown (KNOWLEDGE.md)</button>
+          </div>
+        </div>`;
+
+        host.querySelector('#btn-empty-init-okf')?.addEventListener('click', async () => {
+          await saveKpConfig('knowledge', 'okf', {
+            kp_action: 'export_okf',
+            kp_export_path: 'knowledge',
+          });
+          showToast('Created OKF bundle in knowledge/');
+        });
+        host.querySelector('#btn-empty-init-md')?.addEventListener('click', async () => {
+          await saveKpConfig('KNOWLEDGE.md', 'markdown', {
+            kp_action: 'export_markdown',
+            kp_export_path: 'KNOWLEDGE.md',
+          });
+          showToast('Created single Markdown KP at KNOWLEDGE.md');
+        });
+        return;
+      }
+
+      if (!kp.exists) {
+        host.innerHTML = `<div class="empty-state">
+          <p>Configured Knowledge Pack path <code>${esc(kp.kp_path)}</code> does not exist on disk yet.</p>
+          <div class="action-row">
+            <button type="button" id="btn-missing-init-okf" class="btn btn-primary btn-sm">📦 Initialize OKF Bundle at ${esc(kp.kp_path)}</button>
+            <button type="button" id="btn-missing-init-md" class="btn btn-sm">📄 Create Single Markdown at ${esc(kp.kp_path)}</button>
+          </div>
+        </div>`;
+
+        host.querySelector('#btn-missing-init-okf')?.addEventListener('click', async () => {
+          await saveKpConfig(kp.kp_path, 'okf', {
+            kp_action: 'export_okf',
+            kp_export_path: kp.kp_path,
+          });
+          showToast(`Initialized OKF bundle at ${kp.kp_path}`);
+        });
+        host.querySelector('#btn-missing-init-md')?.addEventListener('click', async () => {
+          await saveKpConfig(kp.kp_path, 'markdown', {
+            kp_action: 'export_markdown',
+            kp_export_path: kp.kp_path,
+          });
+          showToast(`Created Markdown KP at ${kp.kp_path}`);
+        });
+        return;
+      }
+
+      const kq = appState.kpSearch.trim().toLowerCase();
+
+      if (kp.format === 'okf') {
+        const filteredConcepts = concepts.filter((c) => {
+          if (appState.kpTypeFilter !== 'all' && c.type !== appState.kpTypeFilter) return false;
+          if (kq) {
+            const hay = `${c.title} ${c.description} ${c.rel_path} ${c.type} ${c.resource || ''} ${(c.tags || []).join(' ')} ${(c.file_paths || []).join(' ')}`.toLowerCase();
+            if (!hay.includes(kq)) return false;
+          }
+          return true;
+        });
+
+        host.innerHTML =
+          filteredConcepts.length === 0
+            ? `<div class="empty-state"><p>${concepts.length === 0 ? 'No concept .md files found inside this OKF bundle yet. Click "⬆ Export Memory as OKF" above to populate it.' : 'No OKF concepts match the current filter.'}</p></div>`
+            : `<div class="memory-grid">
+                ${filteredConcepts
+                  .map((c) => {
+                    const tagsHtml = (c.tags || [])
+                      .map((t) => `<span class="quick-chip">#${esc(t)}</span>`)
+                      .join('');
+                    const filesHtml = (c.file_paths || [])
+                      .map((f) => `<button type="button" class="chip-link" data-open-kp-file="${esc(f)}">${esc(f)}</button>`)
+                      .join('');
+                    return `<article class="memory-card inject-${esc(c.inject_mode || 'always')} confidence-${esc(c.confidence || 'confirmed')}">
+                      <div class="memory-header">
+                        <div class="memory-meta">
+                          <span class="pill pill-prog">${esc(c.type || 'concept')}</span>
+                          ${c.category && c.category !== c.type ? `<span class="pill">${esc(c.category)}</span>` : ''}
+                          <button type="button" class="chip-link mono" data-open-kp-file="${esc(c.abs_path || c.repo_path)}" title="Open concept Markdown file">${esc(c.rel_path)}</button>
+                        </div>
+                        <div class="action-row">
+                          <button type="button" class="btn btn-sm" data-import-kp-item="${esc(c.id)}" title="Import this concept into Memory">+ To Memory</button>
+                        </div>
+                      </div>
+                      <h3 class="memory-title">${esc(c.title)}</h3>
+                      <p class="memory-body">${esc(c.description || c.body_preview || '')}</p>
+                      ${c.resource ? `<div><code class="pill pill-mono">${esc(c.resource)}</code></div>` : ''}
+                      ${tagsHtml || filesHtml ? `<div class="memory-tags">${tagsHtml}${filesHtml}</div>` : ''}
+                    </article>`;
+                  })
+                  .join('')}
+              </div>`;
+      } else {
+        const filteredSections = sections.filter((s) => {
+          if (!kq) return true;
+          return `${s.heading} ${s.content_preview} ${(s.file_paths || []).join(' ')}`.toLowerCase().includes(kq);
+        });
+
+        host.innerHTML =
+          filteredSections.length === 0
+            ? `<div class="empty-state"><p>No Markdown sections match the current filter.</p></div>`
+            : `<div class="memory-grid">
+                ${filteredSections
+                  .map((s) => {
+                    const filesHtml = (s.file_paths || [])
+                      .map((f) => `<button type="button" class="chip-link" data-open-kp-file="${esc(f)}">${esc(f)}</button>`)
+                      .join('');
+                    return `<article class="memory-card inject-always confidence-confirmed">
+                      <div class="memory-header">
+                        <div class="memory-meta">
+                          <span class="pill pill-rev">H${esc(s.level || 2)}</span>
+                          <span class="pill">${esc(s.category || 'fact')}</span>
+                        </div>
+                        <div class="action-row">
+                          <button type="button" class="btn btn-sm" data-import-kp-item="${esc(s.id)}" title="Import this section into Memory">+ To Memory</button>
+                        </div>
+                      </div>
+                      <h3 class="memory-title">${esc(s.heading)}</h3>
+                      <p class="memory-body">${esc(s.content_preview || '(empty section)')}</p>
+                      ${filesHtml ? `<div class="memory-tags">${filesHtml}</div>` : ''}
+                    </article>`;
+                  })
+                  .join('')}
+              </div>`;
+      }
+
+      host.querySelectorAll('[data-open-kp-file]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const abs = resolveAbsFile(project.workspace_dir, btn.dataset.openKpFile);
+          const res = await transport.openFile(abs);
+          if (res?.fallback === 'copy') await copyToClipboard(abs, `Copied path: ${abs}`);
+        });
+      });
+
+      host.querySelectorAll('[data-import-kp-item]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const itemId = btn.dataset.importKpItem;
+          await runTool('ui_update_project', {
+            project_id: project.project_id,
+            kp_action: 'import',
+            kp_item_id: itemId,
+          });
+          showToast('Imported into Memory');
+        });
+      });
+    };
+
+    renderKpList();
+
+    document.getElementById('btn-browse-kp-dir')?.addEventListener('click', () => {
+      const baseDir = project.workspace_dir || transport?.getDefaultWorkspaceDir?.() || '';
+      const curVal = document.getElementById('kp-path-input')?.value?.trim() || '';
+      openPathPicker({
+        mode: 'dir',
+        title: 'Select OKF Knowledge Pack Directory',
+        startPath: curVal ? resolveAbsFile(baseDir, curVal) : baseDir,
+        baseDir,
+        onSelect: (chosenDir) => {
+          const input = document.getElementById('kp-path-input');
+          if (input) input.value = toRepoRelativePath(chosenDir, baseDir);
+          const modeSel = document.getElementById('kp-mode-select');
+          if (modeSel && modeSel.value === 'markdown') modeSel.value = 'okf';
+        },
+      });
+    });
+
+    document.getElementById('btn-browse-kp-file')?.addEventListener('click', () => {
+      const baseDir = project.workspace_dir || transport?.getDefaultWorkspaceDir?.() || '';
+      const curVal = document.getElementById('kp-path-input')?.value?.trim() || '';
+      openPathPicker({
+        mode: 'file',
+        title: 'Select OKF index.md or Single Markdown File',
+        startPath: curVal ? resolveAbsFile(baseDir, curVal) : baseDir,
+        baseDir,
+        extensions: ['.md', '.markdown'],
+        extLabel: 'Markdown (.md) only',
+        onSelect: (chosenFile) => {
+          const rel = toRepoRelativePath(chosenFile, baseDir);
+          const input = document.getElementById('kp-path-input');
+          if (input) input.value = rel;
+          const modeSel = document.getElementById('kp-mode-select');
+          if (modeSel && modeSel.value === 'okf' && !/index\.md$/i.test(rel)) {
+            modeSel.value = 'auto';
+          }
+        },
+      });
+    });
+
+    document.getElementById('kp-settings-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nextPath = document.getElementById('kp-path-input').value.trim();
+      const nextMode = document.getElementById('kp-mode-select').value;
+      await saveKpConfig(nextPath, nextMode);
+      showToast(nextPath ? `Saved Knowledge Pack (${nextPath})` : 'Cleared Knowledge Pack');
+    });
+
+    document.getElementById('btn-kp-clear')?.addEventListener('click', async () => {
+      await saveKpConfig('', 'auto');
+      showToast('Unlinked Knowledge Pack');
+    });
+
+    document.getElementById('btn-kp-import')?.addEventListener('click', async () => {
+      const nextPath = document.getElementById('kp-path-input').value.trim();
+      const nextMode = document.getElementById('kp-mode-select').value;
+      const snap = await saveKpConfig(nextPath, nextMode, { kp_action: 'import' });
+      const count = snap?.kp_result?.imported_count ?? 0;
+      showToast(`Imported ${count} item(s) from Knowledge Pack into Memory`);
+    });
+
+    document.getElementById('btn-kp-export-okf')?.addEventListener('click', async () => {
+      const rawInput = document.getElementById('kp-path-input').value.trim();
+      const targetPath = rawInput || 'knowledge';
+      const snap = await saveKpConfig(targetPath, 'okf', {
+        kp_action: 'export_okf',
+        kp_export_path: targetPath,
+      });
+      const count = snap?.kp_result?.exported_count ?? memories.length;
+      showToast(`Exported ${count} memories to OKF bundle (${snap?.kp_result?.repo_path || targetPath})`);
+    });
+
+    document.getElementById('btn-kp-export-md')?.addEventListener('click', async () => {
+      const rawInput = document.getElementById('kp-path-input').value.trim();
+      const targetPath =
+        rawInput && /\.(md|markdown)$/i.test(rawInput) && !/index\.md$/i.test(rawInput)
+          ? rawInput
+          : 'KNOWLEDGE.md';
+      const snap = await saveKpConfig(targetPath, 'markdown', {
+        kp_action: 'export_markdown',
+        kp_export_path: targetPath,
+      });
+      const count = snap?.kp_result?.exported_count ?? memories.length;
+      showToast(`Exported ${count} memories to ${snap?.kp_result?.repo_path || targetPath}`);
+    });
+
+    document.getElementById('btn-open-kp-root')?.addEventListener('click', async () => {
+      if (!kpOpenPath) return;
+      const abs = resolveAbsFile(project.workspace_dir, kpOpenPath);
+      const res = await transport.openFile(abs);
+      if (res?.fallback === 'copy') await copyToClipboard(abs, `Copied path: ${abs}`);
+    });
+
+    view.querySelectorAll('[data-kp-type]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        appState.kpTypeFilter = btn.dataset.kpType;
+        render();
+      });
+    });
+
+    document.getElementById('kp-search')?.addEventListener('input', (e) => {
+      appState.kpSearch = e.target.value;
+      renderKpList();
+    });
+
+    return;
+  }
 
   const editingMem = appState.editingMemoryId
     ? memories.find((m) => m.memory_id === appState.editingMemoryId)
@@ -1238,6 +1693,7 @@ function renderMemoryTab(state) {
   const scanLabel = appState.caps.canStartChat ? '✨ Scan Repo with Agent' : '📋 Copy Scan Prompt';
 
   view.innerHTML = `<div class="memory-view">
+    ${topbarHtml}
     <div class="memory-banner">
       <div class="memory-banner-stats">
         <span class="pill pill-prog">⚡ ${alwaysCount} always injected</span>
@@ -1276,6 +1732,8 @@ function renderMemoryTab(state) {
     ${formHtml}
     <div id="memory-list-host"></div>
   </div>`;
+
+  wireSubSwitchAndStatus();
 
   const triggerScan = async () => {
     const prompt = buildMemoryScanPrompt(project);
@@ -2029,6 +2487,8 @@ function wireStaticHandlers() {
       appState.noteTaskFilter = 'all';
       appState.editingMemoryId = null;
       appState.showMemoryForm = false;
+      appState.kpTypeFilter = 'all';
+      appState.kpSearch = '';
       appState.activeEditsFilter = 'all';
       runTool('ui_select_project', { project_id: e.target.value });
     }
@@ -2367,6 +2827,17 @@ async function boot() {
     if (document.visibilityState !== 'visible') return;
     if (document.querySelector('dialog[open]')) return;
     if (appState.showMemoryForm || appState.showNoteForm) return;
+    if (appState.activeTab === 'memory' && appState.knowledgeSubTab === 'kp') {
+      const savedProj = appState.snapshot?.state?.project;
+      const kpInput = document.getElementById('kp-path-input');
+      const kpMode = document.getElementById('kp-mode-select');
+      if (
+        (kpInput && kpInput.value.trim() !== (savedProj?.kp_path || '')) ||
+        (kpMode && kpMode.value !== (savedProj?.kp_mode || 'auto'))
+      ) {
+        return;
+      }
+    }
     if (isUserTyping()) return;
     const projId = appState.snapshot?.selected_project_id;
     transport

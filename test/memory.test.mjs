@@ -6,13 +6,19 @@ import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
 import { openDb, WorkPlanError } from '../core/db.mjs';
 import {
+  exportMemoriesToKnowledgePack,
+  importKnowledgePackToMemories,
+  inspectKnowledgePack,
+  selectKnowledgePackForBrief,
+} from '../core/knowledge_pack.mjs';
+import {
   deleteMemory,
   exportMemoriesMarkdown,
   listMemories,
   saveMemory,
   selectMemoriesForBrief,
 } from '../core/memory.mjs';
-import { createProject } from '../core/tasks.mjs';
+import { createProject, getProjectState, updateProject } from '../core/tasks.mjs';
 
 function makeTempDir(prefix = 'wp-memory-') {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
@@ -296,6 +302,182 @@ test('memory: openDb migrates existing v1 SQLite DB to v2 ProjectMemories preser
       db.close();
     }
   } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('knowledge_pack: supports OKF bundle and Single Markdown file inspection, brief injection, import, and export', () => {
+  const dir = makeTempDir('wp-kp-');
+  const wsDir = path.join(dir, 'repo');
+  fs.mkdirSync(wsDir, { recursive: true });
+  const db = openDb(dir);
+
+  try {
+    // 1. Seed an OKF v0.2 bundle on disk
+    const okfDir = path.join(wsDir, 'knowledge');
+    fs.mkdirSync(path.join(okfDir, 'tables'), { recursive: true });
+    fs.mkdirSync(path.join(okfDir, 'runbooks'), { recursive: true });
+
+    fs.writeFileSync(
+      path.join(okfDir, 'index.md'),
+      [
+        '---',
+        'okf_version: "0.2"',
+        'title: "Billing OKF Bundle"',
+        'description: "Core billing tables and runbooks"',
+        '---',
+        '',
+        '# Tables',
+        '* [orders](tables/orders.md) - Customer orders ledger',
+        '',
+        '# Runbooks',
+        '* [webhook-retry](runbooks/webhook-retry.md) - Handling duplicate Stripe webhook events',
+        '',
+      ].join('\n'),
+      'utf8'
+    );
+
+    fs.writeFileSync(
+      path.join(okfDir, 'tables', 'orders.md'),
+      [
+        '---',
+        'type: table',
+        'title: "orders"',
+        'description: "One row per customer order stored in minor units."',
+        'resource: "postgresql://prod/billing/orders"',
+        'tags: [revenue, core]',
+        'files: [src/billing/orders.ts]',
+        '---',
+        '',
+        '# orders',
+        'The `orders` table records every purchase event.',
+        '',
+      ].join('\n'),
+      'utf8'
+    );
+
+    fs.writeFileSync(
+      path.join(okfDir, 'runbooks', 'webhook-retry.md'),
+      [
+        '---',
+        'type: runbook',
+        'title: "Stripe Webhook Retry Playbook"',
+        'description: "Deduplicate stripe_event_id before posting ledger entries."',
+        'tags: [stripe, webhooks]',
+        'files: [src/webhooks/stripe.ts]',
+        '---',
+        '',
+        '# Stripe Webhook Retry Playbook',
+        'Run `npm test -- test/stripe.test.ts` to verify idempotency.',
+        '',
+      ].join('\n'),
+      'utf8'
+    );
+
+    const { project } = createProject(db, {
+      title: 'KP Test Project',
+      workspace_dir: wsDir,
+      kp_path: 'knowledge',
+      kp_mode: 'auto',
+      seed: false,
+    });
+
+    const stateOkf = getProjectState(db, project.project_id);
+    const kpOkf = stateOkf.knowledge_pack;
+    assert.equal(kpOkf.configured, true);
+    assert.equal(kpOkf.exists, true);
+    assert.equal(kpOkf.format, 'okf');
+    assert.equal(kpOkf.okf_version, '0.2');
+    assert.equal(kpOkf.title, 'Billing OKF Bundle');
+    assert.equal(kpOkf.concepts.length, 2);
+
+    // Brief selection prioritizes task-matched concept
+    const okfBrief = selectKnowledgePackForBrief(stateOkf.project, {
+      taskFiles: ['src/webhooks/stripe.ts'],
+    });
+    assert.equal(okfBrief.active, true);
+    assert.equal(okfBrief.format, 'okf');
+    assert.match(okfBrief.lines[0], /Knowledge Pack \(OKF v0\.2\)/);
+    assert.match(okfBrief.lines[1], /Stripe Webhook Retry Playbook/);
+
+    // Import OKF concepts into ProjectMemories
+    const importedOkf = importKnowledgePackToMemories(db, stateOkf.project);
+    assert.equal(importedOkf.imported_count, 2);
+    const memsAfterOkf = listMemories(db, project.project_id);
+    assert.equal(memsAfterOkf.length, 2);
+    assert.ok(memsAfterOkf.some((m) => m.title === 'orders' && m.category === 'architecture'));
+    assert.ok(
+      memsAfterOkf.some((m) => m.title === 'Stripe Webhook Retry Playbook' && m.category === 'command')
+    );
+
+    // 2. Single Markdown File KP inspection + import
+    const singleMdPath = path.join(wsDir, 'KNOWLEDGE.md');
+    fs.writeFileSync(
+      singleMdPath,
+      [
+        '---',
+        'title: "Service Knowledge Guide"',
+        'description: "Single-file architecture and conventions"',
+        'tags: [guide]',
+        '---',
+        '',
+        '## Architecture Overview',
+        'All mutations run inside `core/db.mjs` immediate transactions.',
+        '',
+        '## Testing Commands',
+        'Use `npm test` to run the full Node test runner.',
+        '',
+      ].join('\n'),
+      'utf8'
+    );
+
+    const updatedProj = updateProject(db, project.project_id, {
+      kp_path: 'KNOWLEDGE.md',
+      kp_mode: 'markdown',
+    });
+    const kpMd = inspectKnowledgePack(updatedProj);
+    assert.equal(kpMd.configured, true);
+    assert.equal(kpMd.exists, true);
+    assert.equal(kpMd.format, 'markdown');
+    assert.equal(kpMd.title, 'Service Knowledge Guide');
+    assert.equal(kpMd.sections.length, 2);
+
+    const mdBrief = selectKnowledgePackForBrief(updatedProj, { taskFiles: ['core/db.mjs'] });
+    assert.equal(mdBrief.active, true);
+    assert.equal(mdBrief.format, 'markdown');
+    assert.match(mdBrief.lines[0], /Knowledge Pack \(Markdown\): KNOWLEDGE\.md/);
+
+    const importedMd = importKnowledgePackToMemories(db, updatedProj);
+    assert.equal(importedMd.imported_count, 2);
+    assert.equal(listMemories(db, project.project_id).length, 4);
+
+    // 3. Export Memories back out to an OKF bundle and a Single Markdown file
+    const exportedOkf = exportMemoriesToKnowledgePack(db, updatedProj, {
+      format: 'okf',
+      target_path: 'exported-okf',
+    });
+    assert.equal(exportedOkf.format, 'okf');
+    assert.equal(exportedOkf.exported_count, 4);
+    assert.equal(fs.existsSync(path.join(wsDir, 'exported-okf', 'index.md')), true);
+    assert.equal(fs.existsSync(path.join(wsDir, 'exported-okf', 'log.md')), true);
+
+    const reInspectedOkf = inspectKnowledgePack({
+      ...updatedProj,
+      kp_path: 'exported-okf',
+      kp_mode: 'okf',
+    });
+    assert.equal(reInspectedOkf.format, 'okf');
+    assert.equal(reInspectedOkf.concepts.length, 4);
+
+    const exportedMd = exportMemoriesToKnowledgePack(db, updatedProj, {
+      format: 'markdown',
+      target_path: 'EXPORTED_KNOWLEDGE.md',
+    });
+    assert.equal(exportedMd.format, 'markdown');
+    assert.equal(exportedMd.exported_count, 4);
+    assert.equal(fs.existsSync(path.join(wsDir, 'EXPORTED_KNOWLEDGE.md')), true);
+  } finally {
+    db.close();
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });

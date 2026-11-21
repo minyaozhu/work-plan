@@ -136,6 +136,8 @@ CREATE TABLE IF NOT EXISTS Projects (
   workspace_dir TEXT NOT NULL DEFAULT '',
   repo_id TEXT NOT NULL DEFAULT '',
   source_ref TEXT NOT NULL DEFAULT '',
+  kp_path TEXT NOT NULL DEFAULT '',
+  kp_mode TEXT NOT NULL DEFAULT 'auto',
   pinned INTEGER NOT NULL DEFAULT 0,
   archived_at TEXT,
   created_at TEXT NOT NULL,
@@ -267,6 +269,18 @@ export function openDb(dataDir) {
   db.exec('PRAGMA foreign_keys = ON;');
   db.exec('PRAGMA synchronous = NORMAL;');
   db.exec(SCHEMA_SQL);
+  const projCols = new Set(
+    db
+      .prepare('PRAGMA table_info(Projects)')
+      .all()
+      .map((c) => c.name)
+  );
+  if (!projCols.has('kp_path')) {
+    db.exec("ALTER TABLE Projects ADD COLUMN kp_path TEXT NOT NULL DEFAULT '';");
+  }
+  if (!projCols.has('kp_mode')) {
+    db.exec("ALTER TABLE Projects ADD COLUMN kp_mode TEXT NOT NULL DEFAULT 'auto';");
+  }
   db.prepare(
     `INSERT INTO Meta (key, value) VALUES ('schema_version', '2')
      ON CONFLICT(key) DO UPDATE SET value = '2'`

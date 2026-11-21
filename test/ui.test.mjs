@@ -39,6 +39,12 @@ test('ui: bundled app.html is self-contained, CSP-safe, themed, and under 1 MiB'
   assert.match(html, /id="btn-theme-toggle"/);
   assert.match(html, /data-theme-override/);
   assert.match(html, /meta\[name="color-scheme"\]\[content="dark"\]/);
+
+  // Knowledge & Memory tab + Knowledge Pack (KP) settings (OKF & Single Markdown)
+  assert.match(html, /id="tab-memory-btn"[^>]*>Knowledge &amp; Memory<span/);
+  assert.match(html, /Knowledge Pack/);
+  assert.match(html, /kp-mode-select/);
+  assert.match(html, /kp-path-input/);
 });
 
 test('ui: formatNodeTooltip returns task title and trimmed brief', () => {

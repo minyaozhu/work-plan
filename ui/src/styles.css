@@ -1514,12 +1514,83 @@ dialog.dialog-picker {
   font-weight: 600;
 }
 
-/* Project Memory Tab */
+/* Knowledge Tab (Memory + Knowledge Pack) */
 .memory-view {
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.knowledge-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--wp-border);
+  border-radius: 8px;
+  background: var(--wp-surface);
+}
+
+.knowledge-subswitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 7px;
+  border: 1px solid var(--wp-border);
+  background: var(--wp-surface-alt);
+}
+
+.knowledge-subbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--wp-text-muted);
+}
+
+.knowledge-subbtn:hover {
+  color: var(--wp-text);
+}
+
+.knowledge-subbtn.active {
+  background: var(--wp-surface);
+  color: var(--wp-accent);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.kp-status-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.kp-settings-card {
+  border: 1px solid var(--wp-border);
+  border-radius: 8px;
+  background: var(--wp-surface);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kp-settings-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
 .memory-banner {
