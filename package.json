@@ -1,6 +1,7 @@
 {
   "name": "work-plan",
   "version": "0.1.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "description": "Large project management for Antigravity with dependency task trees, Knowledge & Memory organization (OKF & Markdown Knowledge Packs), live edit guards, ~60% token savings, and 2–3x time savings.",
