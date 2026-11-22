@@ -12,6 +12,10 @@ A zero-ops, fully local **Antigravity** plugin for a single developer managing l
 | **~60% Empirical Token Savings** | Injects only the focused task brief, upstream handoffs, file-matched memories, and progressive-disclosure KP summaries (SHA-256 deduped per turn). |
 | **2–3× Empirical Time Savings** | Launch ready tasks in parallel chats with one click while automatic same-folder/worktree edit guards prevent silent overwrites. |
 
+## Architecture
+
+![Work Plan System Architecture](assets/architecture.svg)
+
 ## Screenshots
 
 ### Task Tree & Inspector

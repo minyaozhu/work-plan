@@ -1,0 +1,225 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 388" width="960" height="388" role="img" aria-label="Work Plan Antigravity Plugin System Architecture">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --band-host: #f8fafc;
+      --band-plugin: #f1f5f9;
+      --band-state: #f8fafc;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --fg: #0f172a;
+      --muted: #475569;
+      --c-tasks: #2563eb;
+      --c-know: #0d9488;
+      --c-ui: #7c3aed;
+      --c-sidecar: #d97706;
+      --c-guard: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --band-host: #161b22;
+        --band-plugin: #111827;
+        --band-state: #161b22;
+        --card: #1f2937;
+        --border: #334155;
+        --fg: #f1f5f9;
+        --muted: #94a3b8;
+        --c-tasks: #60a5fa;
+        --c-know: #2dd4bf;
+        --c-ui: #a78bfa;
+        --c-sidecar: #fbbf24;
+        --c-guard: #f87171;
+      }
+    }
+    text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .band-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      fill: var(--muted);
+    }
+    .node-title {
+      font-size: 11.5px;
+      font-weight: 600;
+      fill: var(--fg);
+    }
+    .node-sub {
+      font-size: 9.5px;
+      fill: var(--muted);
+    }
+    .edge-label {
+      font-size: 9.5px;
+      fill: var(--muted);
+    }
+  </style>
+
+  <defs>
+    <marker id="arr-tasks" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 1 2 L 8 5 L 1 8 z" fill="var(--c-tasks)"/>
+    </marker>
+    <marker id="arr-know" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 1 2 L 8 5 L 1 8 z" fill="var(--c-know)"/>
+    </marker>
+    <marker id="arr-ui" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 1 2 L 8 5 L 1 8 z" fill="var(--c-ui)"/>
+    </marker>
+    <marker id="arr-sidecar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 1 2 L 8 5 L 1 8 z" fill="var(--c-sidecar)"/>
+    </marker>
+    <marker id="arr-guard" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 1 2 L 8 5 L 1 8 z" fill="var(--c-guard)"/>
+    </marker>
+    <marker id="arr-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 1 2 L 8 5 L 1 8 z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+
+  <!-- Outer Canvas -->
+  <rect x="0" y="0" width="960" height="388" rx="10" fill="var(--bg)" stroke="var(--border)" stroke-width="1"/>
+
+  <!-- Header & Legend -->
+  <text x="16" y="22" font-size="13" font-weight="700" fill="var(--fg)">Work Plan — System Architecture</text>
+  <g transform="translate(362, 14)">
+    <circle cx="0" cy="4" r="4" fill="var(--c-tasks)"/>
+    <text x="9" y="7.5" font-size="10" fill="var(--muted)">Tasks &amp; Handoffs</text>
+    <circle cx="114" cy="4" r="4" fill="var(--c-know)"/>
+    <text x="123" y="7.5" font-size="10" fill="var(--muted)">Knowledge &amp; Memory</text>
+    <circle cx="246" cy="4" r="4" fill="var(--c-guard)"/>
+    <text x="255" y="7.5" font-size="10" fill="var(--muted)">Live Edit Guard</text>
+    <circle cx="350" cy="4" r="4" fill="var(--c-ui)"/>
+    <text x="359" y="7.5" font-size="10" fill="var(--muted)">MCP App</text>
+    <circle cx="422" cy="4" r="4" fill="var(--c-sidecar)"/>
+    <text x="431" y="7.5" font-size="10" fill="var(--muted)">Sidecar / SQLite WAL</text>
+  </g>
+  <line x1="16" y1="31" x2="944" y2="31" stroke="var(--border)" stroke-width="1"/>
+
+  <!-- Shifted Main Diagram Group -->
+  <g transform="translate(0, 34)">
+    <!-- Band 1: Antigravity Host -->
+    <rect x="10" y="4" width="940" height="68" rx="8" fill="var(--band-host)" stroke="var(--border)" stroke-width="1"/>
+    <text x="20" y="18" class="band-label">ANTIGRAVITY HOST (APP 2.0 · IDE · CLI)</text>
+
+    <!-- Band 2: Work Plan Plugin -->
+    <rect x="10" y="96" width="940" height="160" rx="8" fill="var(--band-plugin)" stroke="var(--border)" stroke-width="1"/>
+    <text x="20" y="110" class="band-label">WORK PLAN PLUGIN (work-plan · ZERO-DEP NODE.JS ESM)</text>
+
+    <!-- Band 3: Local Machine State -->
+    <rect x="10" y="280" width="940" height="68" rx="8" fill="var(--band-state)" stroke="var(--border)" stroke-width="1"/>
+    <text x="20" y="294" class="band-label">LOCAL MACHINE STATE (SINGLE-USER · ZERO EXTERNAL INFRA)</text>
+
+    <!-- EDGES: Host <-> Plugin -->
+    <path d="M 90 117 L 90 68" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arr-muted)"/>
+    <text x="18" y="88" class="edge-label">progressive skill</text>
+
+    <path d="M 215 67 L 215 117" fill="none" stroke="var(--c-guard)" stroke-width="1.5" marker-start="url(#arr-guard)" marker-end="url(#arr-guard)"/>
+    <text x="221" y="88" class="edge-label">hooks stdin/out</text>
+
+    <path d="M 380 67 L 380 117" fill="none" stroke="var(--c-guard)" stroke-width="1.5" marker-start="url(#arr-guard)" marker-end="url(#arr-guard)"/>
+
+    <path d="M 488 67 C 488 88, 530 88, 530 117" fill="none" stroke="var(--c-tasks)" stroke-width="1.5" marker-end="url(#arr-tasks)"/>
+    <text x="454" y="88" class="edge-label">stdio MCP</text>
+
+    <path d="M 650 67 L 650 117" fill="none" stroke="var(--c-ui)" stroke-width="1.5" marker-start="url(#arr-ui)" marker-end="url(#arr-ui)"/>
+    <text x="572" y="88" class="edge-label">postMessage</text>
+
+    <path d="M 848 67 L 848 117" fill="none" stroke="var(--c-sidecar)" stroke-width="1.6" marker-start="url(#arr-sidecar)" marker-end="url(#arr-sidecar)"/>
+    <text x="774" y="88" class="edge-label">HTTP / preload.js</text>
+
+    <!-- Sidecar -> MCP Server handleToolCall -->
+    <path d="M 755 142 L 743 142" fill="none" stroke="var(--c-sidecar)" stroke-width="1.5" marker-end="url(#arr-sidecar)"/>
+
+    <!-- EDGES: Row 2A -> Row 2B (Core Engine) -->
+    <path d="M 212 167 C 212 180, 95 176, 95 189" fill="none" stroke="var(--c-guard)" stroke-width="1.5" marker-end="url(#arr-guard)"/>
+    <path d="M 275 167 L 275 189" fill="none" stroke="var(--c-tasks)" stroke-width="1.5" marker-end="url(#arr-tasks)"/>
+    <path d="M 380 167 C 380 178, 405 178, 405 189" fill="none" stroke="var(--c-tasks)" stroke-width="1.3" marker-end="url(#arr-tasks)"/>
+    <path d="M 426 167 C 426 179, 520 177, 520 189" fill="none" stroke="var(--c-know)" stroke-width="1.4" marker-end="url(#arr-know)"/>
+    <path d="M 454 167 C 454 177, 682 175, 682 189" fill="none" stroke="var(--c-know)" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#arr-know)"/>
+
+    <path d="M 510 167 C 510 178, 315 176, 315 189" fill="none" stroke="var(--c-tasks)" stroke-width="1.4" marker-end="url(#arr-tasks)"/>
+    <path d="M 548 167 C 548 178, 435 178, 435 189" fill="none" stroke="var(--c-ui)" stroke-width="1.4" marker-end="url(#arr-ui)"/>
+    <path d="M 588 167 L 588 189" fill="none" stroke="var(--c-know)" stroke-width="1.5" marker-end="url(#arr-know)"/>
+    <path d="M 678 167 C 678 178, 725 178, 725 189" fill="none" stroke="var(--c-know)" stroke-width="1.5" marker-end="url(#arr-know)"/>
+    <path d="M 728 167 C 728 179, 868 177, 868 189" fill="none" stroke="var(--c-tasks)" stroke-width="1.3" marker-end="url(#arr-tasks)"/>
+
+    <!-- EDGES: Core Engine -> Local State -->
+    <path d="M 95 242 L 95 299" fill="none" stroke="var(--c-guard)" stroke-width="1.5" marker-end="url(#arr-guard)"/>
+    <path d="M 260 242 L 260 299" fill="none" stroke="var(--c-tasks)" stroke-width="1.5" marker-end="url(#arr-tasks)"/>
+    <path d="M 412 242 L 412 299" fill="none" stroke="var(--c-ui)" stroke-width="1.4" marker-end="url(#arr-ui)"/>
+    <path d="M 545 242 L 545 299" fill="none" stroke="var(--c-know)" stroke-width="1.5" marker-end="url(#arr-know)"/>
+    <text x="112" y="271" class="edge-label">node:sqlite WAL (core/db.mjs) + digest/*.sha</text>
+
+    <path d="M 726 242 L 726 299" fill="none" stroke="var(--c-know)" stroke-width="1.5" marker-start="url(#arr-know)" marker-end="url(#arr-know)"/>
+    <path d="M 880 242 L 880 299" fill="none" stroke="var(--c-tasks)" stroke-width="1.4" marker-end="url(#arr-tasks)"/>
+    <text x="734" y="271" class="edge-label">OKF / .md / git / gh</text>
+
+    <!-- HOST NODES -->
+    <rect x="20" y="26" width="234" height="40" rx="6" fill="var(--card)" stroke="var(--c-tasks)" stroke-width="1.4"/>
+    <text x="30" y="42" class="node-title">Chat Session A</text>
+    <text x="30" y="57" class="node-sub">Task 1 · Same Folder or Worktree</text>
+
+    <rect x="270" y="26" width="236" height="40" rx="6" fill="var(--card)" stroke="var(--c-tasks)" stroke-width="1.4"/>
+    <text x="280" y="42" class="node-title">Chat Session B</text>
+    <text x="280" y="57" class="node-sub">Task 2 · Parallel or Next Day</text>
+
+    <rect x="522" y="26" width="418" height="40" rx="6" fill="var(--card)" stroke="var(--c-ui)" stroke-width="1.5"/>
+    <text x="534" y="42" class="node-title">Dual-Mode UI (ui/app.html + ui/transport.js)</text>
+    <text x="534" y="57" class="node-sub">Tasks + SVG DAG · Notes · Knowledge &amp; Memory · Active Edits</text>
+
+    <!-- PLUGIN ROW 2A -->
+    <rect x="20" y="118" width="142" height="48" rx="6" fill="var(--card)" stroke="var(--border)" stroke-width="1.3"/>
+    <text x="30" y="136" class="node-title">Skill + Launcher</text>
+    <text x="30" y="152" class="node-sub mono">SKILL.md · bin/run.mjs</text>
+
+    <rect x="176" y="118" width="290" height="48" rx="6" fill="var(--card)" stroke="var(--c-guard)" stroke-width="1.5"/>
+    <text x="186" y="136" class="node-title">Lifecycle Hooks (hooks/hook.mjs)</text>
+    <text x="186" y="152" class="node-sub">PreToolUse · PostToolUse · PreInvocation (KP+Mem) · Stop</text>
+
+    <rect x="480" y="118" width="262" height="48" rx="6" fill="var(--card)" stroke="var(--c-ui)" stroke-width="1.5"/>
+    <text x="490" y="136" class="node-title">MCP Server (mcp/server.mjs)</text>
+    <text x="490" y="152" class="node-sub">11 Agent + open_work_plan + 18 UI Tools</text>
+
+    <rect x="756" y="118" width="184" height="48" rx="6" fill="var(--card)" stroke="var(--c-sidecar)" stroke-width="1.5"/>
+    <text x="766" y="136" class="node-title">Sidecar Aux Pane</text>
+    <text x="766" y="152" class="node-sub mono">sidecars/work_plan/main.mjs</text>
+
+    <!-- PLUGIN ROW 2B: Core Engine -->
+    <rect x="20" y="190" width="150" height="50" rx="6" fill="var(--card)" stroke="var(--c-guard)" stroke-width="1.4"/>
+    <text x="30" y="209" class="node-title mono">core/edit_guard.mjs</text>
+    <text x="30" y="225" class="node-sub">ActiveEdits · force_ask</text>
+
+    <rect x="182" y="190" width="158" height="50" rx="6" fill="var(--card)" stroke="var(--c-tasks)" stroke-width="1.4"/>
+    <text x="192" y="209" class="node-title mono">core/tasks.mjs</text>
+    <text x="192" y="225" class="node-sub">Tree · Kahn DAG · Roll-Up</text>
+
+    <rect x="352" y="190" width="122" height="50" rx="6" fill="var(--card)" stroke="var(--c-ui)" stroke-width="1.4"/>
+    <text x="362" y="209" class="node-title mono">core/notes.mjs</text>
+    <text x="362" y="225" class="node-sub">Notes · Pinned</text>
+
+    <rect x="486" y="190" width="150" height="50" rx="6" fill="var(--card)" stroke="var(--c-know)" stroke-width="1.5"/>
+    <text x="496" y="209" class="node-title mono">core/memory.mjs</text>
+    <text x="496" y="225" class="node-sub">Memories · File-Match</text>
+
+    <rect x="648" y="190" width="156" height="50" rx="6" fill="var(--card)" stroke="var(--c-know)" stroke-width="1.5"/>
+    <text x="658" y="209" class="node-title mono">core/knowledge_pack</text>
+    <text x="658" y="225" class="node-sub">OKF v0.2 &amp; .md · Sync</text>
+
+    <rect x="816" y="190" width="124" height="50" rx="6" fill="var(--card)" stroke="var(--c-tasks)" stroke-width="1.4"/>
+    <text x="826" y="209" class="node-title mono">core/sources.mjs</text>
+    <text x="826" y="225" class="node-sub">MD · Folder · Git</text>
+
+    <!-- LOCAL STATE NODES -->
+    <rect x="20" y="300" width="558" height="40" rx="6" fill="var(--card)" stroke="var(--c-sidecar)" stroke-width="1.5"/>
+    <text x="32" y="316" class="node-title mono">${PLUGIN_DATA}/work_plan.db + digest/*.sha</text>
+    <text x="32" y="331" class="node-sub">8 Tables: Projects, Tasks, TaskDeps, ActiveEdits, ProjectNotes, ProjectMemories, ConversationBindings, Meta</text>
+
+    <rect x="594" y="300" width="346" height="40" rx="6" fill="var(--card)" stroke="var(--c-know)" stroke-width="1.4"/>
+    <text x="606" y="316" class="node-title">Workspace, Git Repo &amp; Knowledge Packs</text>
+    <text x="606" y="331" class="node-sub">Files · Worktrees · PLAN.md · OKF Bundles (index.md) &amp; .md KPs</text>
+  </g>
+</svg>
