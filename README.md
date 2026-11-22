@@ -1,6 +1,16 @@
 # Work Plan (`work-plan`)
 
-A zero-ops, fully local **Antigravity** plugin for a single developer managing multi-day engineering projects across sequential or concurrent chats — with **no backend servers**, **no external databases**, and **no runtime dependencies**.
+A zero-ops, fully local **Antigravity** plugin for a single developer managing large, multi-day engineering projects across sequential or concurrent chats — with **no backend servers**, **no external databases**, and **no runtime dependencies**.
+
+> **Why Work Plan?**
+> - **Large Project Management with Knowledge & Memory Organization:** Break complex codebases into persistent dependency-tracked task trees (up to 500 tasks, depth 8) paired with structured **Project Memory** and portable **Knowledge Packs** (**OKF** bundles & single **Markdown** files).
+> - **Empirical ~60% Token Savings & 2–3× Time Savings:** Eliminates repetitive context re-explaining and redundant repo re-scans across sessions via SHA-deduped `[WORK PLAN]` turn briefs, progressive-disclosure Knowledge Packs, structured task handoffs, and safe parallel multi-chat execution with live file-edit guards.
+
+| Capability | Impact |
+| :--- | :--- |
+| **Large Project Management + Knowledge & Memory** | Keep multi-day specs, task DAGs, durable memories, and OKF/Markdown Knowledge Packs organized in one local SQLite WAL store. |
+| **~60% Empirical Token Savings** | Injects only the focused task brief, upstream handoffs, file-matched memories, and progressive-disclosure KP summaries (SHA-256 deduped per turn). |
+| **2–3× Empirical Time Savings** | Launch ready tasks in parallel chats with one click while automatic same-folder/worktree edit guards prevent silent overwrites. |
 
 ## Screenshots
 

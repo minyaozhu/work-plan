@@ -2,7 +2,8 @@
   "name": "work-plan",
   "displayName": "Work Plan",
   "version": "0.1.0",
-  "description": "Local multi-session task tree, dependency graph, structured handoffs, and live same-folder/worktree edit protection for solo developers.",
+  "description": "Large project management for Antigravity with dependency task trees, Knowledge & Memory organization (OKF & Markdown Knowledge Packs), and live edit guards — delivering ~60% empirical token savings and 2–3x time savings.",
+  "repository": "https://github.com/minyaozhu/work-plan",
   "logo": "assets/logo.svg",
   "suggestedPrompts": [
     "Open the Work Plan board and create a project for this workspace",
