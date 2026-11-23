@@ -1,5 +1,6 @@
 {
   "name": "work-plan-mcp",
+  "mcpName": "io.github.minyaozhu/work-plan",
   "version": "0.1.0",
   "license": "MIT",
   "type": "module",

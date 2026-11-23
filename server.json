@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.minyaozhu/work-plan",
+  "title": "Work Plan",
+  "description": "Local SQLite task DAG, OKF/Markdown Knowledge Packs, project memory, and live edit guards.",
+  "repository": {
+    "url": "https://github.com/minyaozhu/work-plan",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "work-plan-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
