@@ -1,0 +1,21 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      dataDir:
+        type: string
+        description: Optional persistent directory for work_plan.db (defaults to ~/.gemini/config/plugin-data/work-plan)
+  commandFunction: |-
+    (config) => ({
+      command: 'node',
+      args: [
+        'bin/run.mjs',
+        'mcp/server.mjs',
+        ...(config.dataDir ? ['--data-dir', config.dataDir] : [])
+      ]
+    })
+build:
+  dockerfile: Dockerfile
+  dockerBuildPath: .

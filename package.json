@@ -1,15 +1,43 @@
 {
-  "name": "work-plan",
+  "name": "work-plan-mcp",
   "version": "0.1.0",
   "license": "MIT",
-  "private": true,
   "type": "module",
-  "description": "Large project management for Antigravity with dependency task trees, Knowledge & Memory organization (OKF & Markdown Knowledge Packs), live edit guards, ~60% token savings, and 2–3x time savings.",
-  "repository": "https://github.com/minyaozhu/work-plan",
+  "description": "Zero-dep local SQLite MCP server & Antigravity plugin: dependency task trees, Knowledge & Memory (OKF & Markdown Knowledge Packs), and live file-edit guards (~60% token savings).",
+  "homepage": "https://github.com/minyaozhu/work-plan#readme",
+  "bugs": {
+    "url": "https://github.com/minyaozhu/work-plan/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minyaozhu/work-plan.git"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "bin": {
+    "work-plan-mcp": "./bin/work-plan-mcp.mjs"
+  },
+  "files": [
+    "bin/",
+    "core/",
+    "mcp/",
+    "hooks/",
+    "sidecars/",
+    "ui/app.html",
+    "skills/",
+    "assets/logo.svg",
+    "plugin.json",
+    "mcp_config.json",
+    "hooks.json",
+    "README.md",
+    "LICENSE"
+  ],
   "keywords": [
     "antigravity",
     "antigravity-plugin",
     "mcp",
+    "mcp-server",
     "ai-agents",
     "project-management",
     "knowledge-management",

@@ -1,0 +1,107 @@
+name: Track GitHub Traffic History
+
+# GitHub only retains traffic metrics (views, clones, referrers, paths) for 14 days.
+# This workflow snapshots daily stats into an orphan `traffic-history` branch so you
+# never lose historical data.
+#
+# One-time setup:
+# 1. Create a Fine-Grained Personal Access Token with ONLY this repository selected
+#    and `Administration: Read-only` + `Contents: Read and write` (or classic `repo` scope).
+# 2. Add it as a repository secret named `TRAFFIC_PAT` under Settings -> Secrets -> Actions.
+
+on:
+  schedule:
+    - cron: '15 4 * * *' # Daily at 04:15 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check TRAFFIC_PAT secret
+        id: check
+        env:
+          TOKEN: ${{ secrets.TRAFFIC_PAT }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::notice::TRAFFIC_PAT secret is not configured yet. Skipping traffic snapshot."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fetch GitHub traffic and repo metrics
+        if: steps.check.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.TRAFFIC_PAT }}
+          REPO: ${{ github.repository }}
+        run: |
+          mkdir -p /tmp/traffic-snap
+          DATE_UTC=$(date -u +%Y-%m-%d)
+          echo "DATE_UTC=$DATE_UTC" >> "$GITHUB_ENV"
+
+          gh api "repos/$REPO" --jq '{stargazers_count, forks_count, subscribers_count, open_issues_count}' > /tmp/traffic-snap/repo.json
+          gh api "repos/$REPO/traffic/clones" > /tmp/traffic-snap/clones.json
+          gh api "repos/$REPO/traffic/views" > /tmp/traffic-snap/views.json
+          gh api "repos/$REPO/traffic/popular/referrers" > /tmp/traffic-snap/referrers.json
+          gh api "repos/$REPO/traffic/popular/paths" > /tmp/traffic-snap/paths.json
+
+          jq -n \
+            --arg captured_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg date "$DATE_UTC" \
+            --slurpfile repo /tmp/traffic-snap/repo.json \
+            --slurpfile clones /tmp/traffic-snap/clones.json \
+            --slurpfile views /tmp/traffic-snap/views.json \
+            --slurpfile referrers /tmp/traffic-snap/referrers.json \
+            --slurpfile paths /tmp/traffic-snap/paths.json \
+            '{
+              captured_at: $captured_at,
+              date: $date,
+              repo: $repo[0],
+              clones: $clones[0],
+              views: $views[0],
+              referrers: $referrers[0],
+              paths: $paths[0]
+            }' > "/tmp/traffic-snap/$DATE_UTC.json"
+
+      - name: Commit snapshot to traffic-history branch
+        if: steps.check.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          mkdir -p /tmp/history-repo
+          cd /tmp/history-repo
+          git init
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+
+          if git ls-remote --exit-code --heads origin traffic-history >/dev/null 2>&1; then
+            git fetch origin traffic-history --depth=1
+            git checkout -B traffic-history origin/traffic-history
+          else
+            git checkout --orphan traffic-history
+          fi
+
+          mkdir -p snapshots
+          cp "/tmp/traffic-snap/${DATE_UTC}.json" "snapshots/${DATE_UTC}.json"
+
+          # Maintain a rolling CSV summary for quick charting
+          if [ ! -f summary.csv ]; then
+            echo "date,stars,forks,views_14d,views_unique_14d,clones_14d,clones_unique_14d" > summary.csv
+          fi
+          grep -v "^${DATE_UTC}," summary.csv > summary.tmp || true
+          mv summary.tmp summary.csv
+          jq -r '[.date, .repo.stargazers_count, .repo.forks_count, .views.count, .views.uniques, .clones.count, .clones.uniques] | @csv' \
+            "snapshots/${DATE_UTC}.json" | tr -d '"' >> summary.csv
+
+          git add "snapshots/${DATE_UTC}.json" summary.csv
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(traffic): snapshot ${DATE_UTC}"
+            git push origin traffic-history
+          fi

@@ -1,6 +1,11 @@
 # Work Plan (`work-plan`)
 
-A zero-ops, fully local **Antigravity** plugin for a single developer managing large, multi-day engineering projects across sequential or concurrent chats — with **no backend servers**, **no external databases**, and **no runtime dependencies**.
+[![Glama MCP Server](https://glama.ai/mcp/servers/minyaozhu/work-plan/badges/score.svg)](https://glama.ai/mcp/servers/minyaozhu/work-plan)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node >= 22.5](https://img.shields.io/badge/node-%3E%3D22.5-brightgreen.svg)](https://nodejs.org/)
+[![Zero Runtime Deps](https://img.shields.io/badge/runtime%20deps-0-teal.svg)](package.json)
+
+A zero-ops, fully local **Antigravity plugin & MCP server** for a single developer managing large, multi-day engineering projects across sequential or concurrent chats — with **no backend servers**, **no external databases**, and **no runtime dependencies**.
 
 > **Why Work Plan?**
 > - **Large Project Management with Knowledge & Memory Organization:** Break complex codebases into persistent dependency-tracked task trees (up to 500 tasks, depth 8) paired with structured **Project Memory** and portable **Knowledge Packs** (**OKF** bundles & single **Markdown** files).
@@ -67,7 +72,9 @@ Managing a large codebase across multiple AI coding agent chats usually breaks d
 | **Multi-day task tracking & dependencies** | Lost in long chat scrollback or stale TODO lists; hard to tell what is blocked vs. ready next. | Persistent SQLite task tree + DAG (`Ready` / `Waiting` badges, interactive SVG graph, automatic parent roll-up). |
 | **Running parallel AI coding sessions** | Concurrent chats silently overwrite the same files or clash on `package.json` / schemas across worktrees. | Automatic `PreToolUse` / `PostToolUse` / `Stop` live-edit guards catch same-folder (`force_ask`) and cross-worktree (`ask`) collisions in real time, letting you safely run 2–3 tasks in parallel. |
 
-## Installation (Antigravity)
+## Installation
+
+### Option 1: Antigravity Plugin (Full Experience: Aux Pane + Live Edit Hooks + Skill)
 
 Clone this repository directly into Antigravity's global plugins folder (no `npm install` or build step required for end users because `ui/app.html` is pre-bundled):
 
@@ -78,6 +85,34 @@ git clone https://github.com/minyaozhu/work-plan.git ~/.gemini/config/plugins/wo
 Once installed:
 - Open **Work Plan** from the conversation side pane **`+` menu**, or ask the agent `"Open Work Plan"` to receive a one-click `[Work Plan](sidecar://work-plan/work_plan/)` pill.
 - If the plugin was already loaded before updating, toggle **work-plan** off and back on in Customizations (or restart Antigravity) to reload the aux pane.
+
+### Option 2: Any MCP Client (`npx` — Claude Code, Cursor, Windsurf, Cline, VS Code)
+
+**Claude Code:**
+
+```bash
+claude mcp add work-plan -- npx -y work-plan-mcp
+```
+
+**Cursor / Windsurf / Cline / VS Code (`mcp.json`):**
+
+```json
+{
+  "mcpServers": {
+    "work-plan": {
+      "command": "npx",
+      "args": ["-y", "work-plan-mcp"]
+    }
+  }
+}
+```
+
+**Open the interactive Task Tree, Dependency Graph & Knowledge Board in your browser:**
+
+```bash
+npx -y work-plan-mcp ui
+# opens local UI at http://127.0.0.1:8765 (shares the exact same SQLite DB)
+```
 
 ### Try It in 10 Seconds (Examples & Local Browser Preview)
 
