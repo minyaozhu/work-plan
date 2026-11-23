@@ -1,0 +1,207 @@
+{
+  "captured_at": "2026-11-23T18:01:10Z",
+  "date": "2026-11-23",
+  "repo": {
+    "forks_count": 0,
+    "open_issues_count": 0,
+    "stargazers_count": 0,
+    "subscribers_count": 0
+  },
+  "clones": {
+    "count": 107,
+    "uniques": 62,
+    "clones": [
+      {
+        "timestamp": "2026-11-09T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-10T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-11T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-12T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-13T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-14T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-15T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-16T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-17T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-18T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-19T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-20T00:00:00Z",
+        "count": 28,
+        "uniques": 16
+      },
+      {
+        "timestamp": "2026-11-21T00:00:00Z",
+        "count": 10,
+        "uniques": 8
+      },
+      {
+        "timestamp": "2026-11-22T00:00:00Z",
+        "count": 69,
+        "uniques": 41
+      }
+    ]
+  },
+  "views": {
+    "count": 24,
+    "uniques": 6,
+    "views": [
+      {
+        "timestamp": "2026-11-09T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-10T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-11T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-12T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-13T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-14T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-15T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-16T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-17T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-18T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-19T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-20T00:00:00Z",
+        "count": 4,
+        "uniques": 2
+      },
+      {
+        "timestamp": "2026-11-21T00:00:00Z",
+        "count": 5,
+        "uniques": 1
+      },
+      {
+        "timestamp": "2026-11-22T00:00:00Z",
+        "count": 15,
+        "uniques": 5
+      }
+    ]
+  },
+  "referrers": [
+    {
+      "referrer": "github.com",
+      "count": 12,
+      "uniques": 2
+    }
+  ],
+  "paths": [
+    {
+      "path": "/minyaozhu/work-plan",
+      "title": "Overview",
+      "count": 15,
+      "uniques": 5
+    },
+    {
+      "path": "/minyaozhu/work-plan/graphs/traffic",
+      "title": "/graphs/traffic",
+      "count": 5,
+      "uniques": 1
+    },
+    {
+      "path": "/minyaozhu/work-plan/blob/main/assets/screenshots/project-memory.png",
+      "title": "/blob/main/assets/screenshots/project-memory.png",
+      "count": 1,
+      "uniques": 1
+    },
+    {
+      "path": "/minyaozhu/work-plan/blob/main/assets/screenshots/tasks-inspector.png",
+      "title": "/blob/main/assets/screenshots/tasks-inspector.png",
+      "count": 1,
+      "uniques": 1
+    },
+    {
+      "path": "/minyaozhu/work-plan/pulse",
+      "title": "/pulse",
+      "count": 1,
+      "uniques": 1
+    },
+    {
+      "path": "/minyaozhu/work-plan/releases/tag/v0.1.0",
+      "title": "/releases/tag/v0.1.0",
+      "count": 1,
+      "uniques": 1
+    }
+  ]
+}
