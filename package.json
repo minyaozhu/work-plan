@@ -17,7 +17,7 @@
     "node": ">=22.5.0"
   },
   "bin": {
-    "work-plan-mcp": "./bin/work-plan-mcp.mjs"
+    "work-plan-mcp": "bin/work-plan-mcp.mjs"
   },
   "files": [
     "bin/",

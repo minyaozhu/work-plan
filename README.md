@@ -1,6 +1,6 @@
 # Work Plan (`work-plan`)
 
-[![Glama MCP Server](https://glama.ai/mcp/servers/minyaozhu/work-plan/badges/score.svg)](https://glama.ai/mcp/servers/minyaozhu/work-plan)
+[![minyaozhu/work-plan MCP server](https://glama.ai/mcp/servers/minyaozhu/work-plan/badges/score.svg)](https://glama.ai/mcp/servers/minyaozhu/work-plan)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node >= 22.5](https://img.shields.io/badge/node-%3E%3D22.5-brightgreen.svg)](https://nodejs.org/)
 [![Zero Runtime Deps](https://img.shields.io/badge/runtime%20deps-0-teal.svg)](package.json)
