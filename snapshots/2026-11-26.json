@@ -1,0 +1,231 @@
+{
+  "captured_at": "2026-11-26T13:54:31Z",
+  "date": "2026-11-26",
+  "repo": {
+    "forks_count": 0,
+    "open_issues_count": 0,
+    "stargazers_count": 0,
+    "subscribers_count": 0
+  },
+  "clones": {
+    "count": 213,
+    "uniques": 112,
+    "clones": [
+      {
+        "timestamp": "2026-11-12T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-13T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-14T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-15T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-16T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-17T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-18T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-19T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-20T00:00:00Z",
+        "count": 28,
+        "uniques": 16
+      },
+      {
+        "timestamp": "2026-11-21T00:00:00Z",
+        "count": 10,
+        "uniques": 8
+      },
+      {
+        "timestamp": "2026-11-22T00:00:00Z",
+        "count": 69,
+        "uniques": 41
+      },
+      {
+        "timestamp": "2026-11-23T00:00:00Z",
+        "count": 53,
+        "uniques": 25
+      },
+      {
+        "timestamp": "2026-11-24T00:00:00Z",
+        "count": 31,
+        "uniques": 18
+      },
+      {
+        "timestamp": "2026-11-25T00:00:00Z",
+        "count": 22,
+        "uniques": 14
+      }
+    ]
+  },
+  "views": {
+    "count": 71,
+    "uniques": 8,
+    "views": [
+      {
+        "timestamp": "2026-11-12T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-13T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-14T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-15T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-16T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-17T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-18T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-19T00:00:00Z",
+        "count": 0,
+        "uniques": 0
+      },
+      {
+        "timestamp": "2026-11-20T00:00:00Z",
+        "count": 4,
+        "uniques": 2
+      },
+      {
+        "timestamp": "2026-11-21T00:00:00Z",
+        "count": 5,
+        "uniques": 1
+      },
+      {
+        "timestamp": "2026-11-22T00:00:00Z",
+        "count": 15,
+        "uniques": 5
+      },
+      {
+        "timestamp": "2026-11-23T00:00:00Z",
+        "count": 36,
+        "uniques": 1
+      },
+      {
+        "timestamp": "2026-11-24T00:00:00Z",
+        "count": 7,
+        "uniques": 2
+      },
+      {
+        "timestamp": "2026-11-25T00:00:00Z",
+        "count": 4,
+        "uniques": 2
+      }
+    ]
+  },
+  "referrers": [
+    {
+      "referrer": "github.com",
+      "count": 17,
+      "uniques": 4
+    }
+  ],
+  "paths": [
+    {
+      "path": "/minyaozhu/work-plan/graphs/traffic",
+      "title": "/graphs/traffic",
+      "count": 21,
+      "uniques": 1
+    },
+    {
+      "path": "/minyaozhu/work-plan",
+      "title": "Overview",
+      "count": 20,
+      "uniques": 7
+    },
+    {
+      "path": "/minyaozhu/work-plan/pulse",
+      "title": "/pulse",
+      "count": 4,
+      "uniques": 2
+    },
+    {
+      "path": "/minyaozhu/work-plan/discussions/1",
+      "title": "/discussions/1",
+      "count": 2,
+      "uniques": 2
+    },
+    {
+      "path": "/minyaozhu/work-plan/actions/metrics/performance",
+      "title": "/actions/metrics/performance",
+      "count": 2,
+      "uniques": 1
+    },
+    {
+      "path": "/minyaozhu/work-plan/issues",
+      "title": "/issues",
+      "count": 2,
+      "uniques": 1
+    },
+    {
+      "path": "/minyaozhu/work-plan/network/dependencies",
+      "title": "/network/dependencies",
+      "count": 2,
+      "uniques": 1
+    },
+    {
+      "path": "/minyaozhu/work-plan/actions",
+      "title": "/actions",
+      "count": 1,
+      "uniques": 1
+    },
+    {
+      "path": "/minyaozhu/work-plan/actions/metrics/usage",
+      "title": "/actions/metrics/usage",
+      "count": 1,
+      "uniques": 1
+    },
+    {
+      "path": "/minyaozhu/work-plan/actions/new",
+      "title": "/actions/new",
+      "count": 1,
+      "uniques": 1
+    }
+  ]
+}
